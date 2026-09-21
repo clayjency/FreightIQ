@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.routers import dashboard, forecast, ports, decision, routes, planner
+from backend.nlq.router import router as nlq_router
 
 # ─────────────────────────────────────────────────────────────────────────────
 # App Init
@@ -71,6 +72,7 @@ app.include_router(ports.router)
 app.include_router(decision.router)
 app.include_router(routes.router)
 app.include_router(planner.router)
+app.include_router(nlq_router)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Health Check
@@ -97,6 +99,8 @@ async def health_check() -> dict:
             "routes": "/api/routes",
             "planner": "/api/planner",
             "vesselClasses": "/api/vessel-classes",
+            "nlqChat": "/api/v1/chat/query",
+            "nlqHealth": "/api/v1/chat/health",
             "docs": "/docs",
         },
     }
