@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Link } from "react-router-dom";
 import {
   AreaChart,
   Area,
@@ -513,6 +514,17 @@ export function FreightIQDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {/* Ask GPT-4o AI Quick Launcher Button */}
+            <Link
+              to="/chat"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-semibold transition-all shadow-sm"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              <span>Ask GPT-4o AI</span>
+            </Link>
+
             {/* Status indicators */}
             <div className="hidden sm:flex items-center gap-2 text-[11px] font-mono text-neutral-500">
               <span className="flex items-center gap-1.5">
