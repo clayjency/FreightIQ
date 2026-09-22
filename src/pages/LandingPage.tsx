@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { BarChart3, Navigation, Anchor, FileText, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export const LandingPage: React.FC = () => {
@@ -12,32 +12,24 @@ export const LandingPage: React.FC = () => {
     {
       title: "Route & Vessel Planning",
       description: "Analyze trade routes, calculate voyage duration, and optimize vessel assignment across bulk carrier classes.",
-      icon: <Navigation className="h-4 w-4" />,
-      tag: "Navigation",
       link: "/planner",
       image: "/card_route_planning.jpg",
     },
     {
       title: "Port Operational Intelligence",
       description: "Monitor real-time draft restrictions, berth waiting times, and congestion risk factors across global ports.",
-      icon: <Anchor className="h-4 w-4" />,
-      tag: "Ports",
       link: "/ports",
       image: "/card_port_intelligence.jpg",
     },
     {
       title: "Freight Rate Forecasting",
       description: "Statistical econometric forecasting models (P10, P50, P90) to inform spot and period booking decisions.",
-      icon: <BarChart3 className="h-4 w-4" />,
-      tag: "Forecasting",
       link: "/forecast",
       image: "/card_rate_forecasting.jpg",
     },
     {
       title: "Chartering Intelligence",
       description: "Data-driven chartering insights grounded in historical fixture data and port authority circulars.",
-      icon: <FileText className="h-4 w-4" />,
-      tag: "Chartering",
       link: "/chat",
       image: "/card_chartering_intelligence.jpg",
     },
@@ -56,34 +48,34 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#09090b] flex flex-col font-sans text-neutral-400 selection:bg-neutral-800 selection:text-neutral-200">
       
-      {/* ── Top Header Navigation ── */}
-      <header className="relative z-50 border-b border-white/[0.08] bg-[#09090b]/80 backdrop-blur-md">
+      {/* ── Top Header Navigation (Colors matched with hero image - darker tone) ── */}
+      <header className="relative z-50 border-b border-white/[0.06] bg-[#030e1a]/92 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#d4c29d]/10 border border-[#d4c29d]/25 shadow-sm shrink-0">
-              <span className="text-[11px] font-black font-mono tracking-tight text-[#d4c29d] select-none">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#d4c29d]/15 border border-[#d4c29d]/30 shadow-sm shadow-[#d4c29d]/10 shrink-0">
+              <span className="text-xs font-black font-mono tracking-tight text-[#d4c29d] select-none">
                 FIQ
               </span>
             </div>
-            <span className="text-base font-bold tracking-tight text-white">
+            <span className="text-lg font-bold tracking-tight text-white">
               Freight<span className="text-[#d4c29d]">IQ</span>
             </span>
           </div>
 
           {/* Navigation links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400">
-            <Link to="/planner" className="hover:text-white transition-colors">
+          <nav className="hidden md:flex items-center gap-8 text-[15px] font-medium text-neutral-300">
+            <Link to="/planner" className="hover:text-[#d4c29d] transition-colors">
               Route Planner
             </Link>
-            <Link to="/ports" className="hover:text-white transition-colors">
+            <Link to="/ports" className="hover:text-[#d4c29d] transition-colors">
               Port Intelligence
             </Link>
-            <Link to="/forecast" className="hover:text-white transition-colors">
+            <Link to="/forecast" className="hover:text-[#d4c29d] transition-colors">
               Rate Forecast
             </Link>
-            <Link to="/chat" className="hover:text-white transition-colors">
+            <Link to="/chat" className="hover:text-[#d4c29d] transition-colors">
               Assistant
             </Link>
           </nav>
@@ -93,7 +85,7 @@ export const LandingPage: React.FC = () => {
             {isAuthenticated ? (
               <Link
                 to="/dashboard"
-                className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-neutral-100 text-neutral-950 hover:bg-white transition-colors"
+                className="inline-flex items-center gap-2 text-[15px] font-medium px-4 py-2 rounded-lg bg-neutral-100 text-neutral-950 hover:bg-white transition-colors"
               >
                 Dashboard
                 <ArrowRight className="h-4 w-4" />
@@ -102,13 +94,13 @@ export const LandingPage: React.FC = () => {
               <>
                 <Link
                   to="/login"
-                  className="text-sm font-medium text-neutral-400 hover:text-neutral-200 px-3 py-1.5 transition-colors"
+                  className="text-[15px] font-medium text-neutral-300 hover:text-white px-3 py-1.5 transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm font-medium px-4 py-2 bg-neutral-100 text-neutral-950 rounded-lg hover:bg-white transition-colors"
+                  className="text-[15px] font-medium px-4 py-2 bg-neutral-100 text-neutral-950 rounded-lg hover:bg-white transition-colors"
                 >
                   Get Started
                 </Link>
@@ -189,9 +181,6 @@ export const LandingPage: React.FC = () => {
               <h2 className="text-lg font-bold tracking-tight text-white">
                 Platform Capabilities
               </h2>
-              <p className="text-xs text-neutral-400 mt-1">
-                Showing {currentPage * 2 + 1}–{currentPage * 2 + 2} of {features.length} core operations modules
-              </p>
             </div>
 
             {/* Slider Controls */}
@@ -227,22 +216,17 @@ export const LandingPage: React.FC = () => {
               <Link
                 key={feat.title}
                 to={feat.link}
-                className="group rounded-2xl border border-white/[0.08] bg-neutral-900/50 backdrop-blur-md overflow-hidden hover:border-white/[0.18] transition-all flex flex-col justify-between"
+                className="group rounded-2xl border border-white/[0.06] bg-neutral-950/80 backdrop-blur-md overflow-hidden hover:border-white/[0.14] transition-all flex flex-col justify-between shadow-2xl shadow-black/90"
               >
-                {/* Photo Top Container */}
+                {/* Photo Top Container - darker with all-around vignette */}
                 <div className="relative h-52 sm:h-60 w-full overflow-hidden bg-neutral-950">
                   <img
                     src={feat.image}
                     alt={feat.title}
-                    className="w-full h-full object-cover object-center filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 group-hover:brightness-100 transition-all duration-500"
+                    className="w-full h-full object-cover object-center filter brightness-[0.75] contrast-[1.08] saturate-[0.95] group-hover:scale-105 group-hover:brightness-95 group-hover:saturate-[1.35] transition-all duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/90 via-transparent to-black/25" />
-                  
-                  {/* Subtle Floating Category Tag */}
-                  <div className="absolute top-4 left-4 inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-neutral-950/80 backdrop-blur-md border border-white/[0.1] text-[10px] font-mono uppercase tracking-widest text-neutral-300 shadow-lg">
-                    {feat.icon}
-                    <span>{feat.tag}</span>
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/25 to-black/50" />
+                  <div className="absolute inset-0 shadow-[inset_0_0_35px_rgba(0,0,0,0.75)] pointer-events-none" />
                 </div>
 
                 {/* Card Content */}
@@ -268,18 +252,22 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="relative z-10 border-t border-white/[0.08] bg-[#09090b] py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
-          <div className="flex items-center gap-2">
-            <div className="flex h-5 w-5 items-center justify-center rounded bg-[#d4c29d]/10 border border-[#d4c29d]/25 text-[9px] font-mono font-black text-[#d4c29d] select-none">
-              FIQ
+      {/* ── Footer (Color exact same as header) ── */}
+      <footer className="relative z-10 border-t border-white/[0.06] bg-[#030e1a]/92 backdrop-blur-md py-8 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-neutral-400">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#d4c29d]/15 border border-[#d4c29d]/30 shadow-sm shadow-[#d4c29d]/10 shrink-0">
+              <span className="text-[11px] font-black font-mono tracking-tight text-[#d4c29d] select-none">
+                FIQ
+              </span>
             </div>
-            <span className="font-medium text-neutral-300">Freight<span className="text-[#d4c29d]">IQ</span></span>
+            <span className="text-sm font-bold tracking-tight text-white">
+              Freight<span className="text-[#d4c29d]">IQ</span>
+            </span>
             <span className="text-neutral-600">&middot;</span>
-            <span>&copy; 2026 FreightIQ. All rights reserved.</span>
+            <span className="text-neutral-400">&copy; 2026 FreightIQ. All rights reserved.</span>
           </div>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
             SMART INDIA HACKATHON 2026 &middot; PS-26006
           </p>
         </div>
@@ -287,6 +275,3 @@ export const LandingPage: React.FC = () => {
     </div>
   );
 };
-
-
-
