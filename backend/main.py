@@ -17,8 +17,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from backend.routers import dashboard, forecast, ports, decision, routes, planner
+from backend.routers import dashboard, forecast, ports, decision, routes, planner, auth
 from backend.nlq.router import router as nlq_router
+from backend.database import init_db
 
 # ─────────────────────────────────────────────────────────────────────────────
 # App Init
@@ -66,6 +67,9 @@ app.add_middleware(
 # Register Routers
 # ─────────────────────────────────────────────────────────────────────────────
 
+init_db()
+
+app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(forecast.router)
 app.include_router(ports.router)

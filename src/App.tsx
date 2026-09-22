@@ -8,11 +8,17 @@ import { RoutePlannerPage } from "./pages/RoutePlannerPage";
 import { PortIntelligencePage } from "./pages/PortIntelligencePage";
 import { ForecastPage } from "./pages/ForecastPage";
 import { NLQAssistantPage } from "./pages/NLQAssistantPage";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { LoginPage } from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
+import { LandingPage } from "./pages/LandingPage";
+import { Outlet } from "react-router-dom";
 
 /* ═══ Nav Items ═══ */
 const NAV_ITEMS = [
   {
-    path: "/",
+    path: "/dashboard",
     end: true,
     label: "Dashboard",
     sublabel: "Overview",
@@ -71,6 +77,7 @@ const NAV_ITEMS = [
 /* ═══ Sidebar ═══ */
 function Sidebar() {
   const location = useLocation();
+  const { logout, username } = useAuth();
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-[220px] flex flex-col border-r border-white/[0.05] bg-neutral-950">
@@ -116,33 +123,60 @@ function Sidebar() {
 
       {/* Footer */}
       <div className="px-4 py-4 border-t border-white/[0.04]">
-        <div className="flex items-center gap-2 text-[10px] font-mono text-neutral-600">
+        <div className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 mb-3">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span>API: localhost:8000</span>
         </div>
-        <p className="text-[9px] text-neutral-700 mt-1">PS-26006 • v3.2.0</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] text-neutral-300 font-medium truncate max-w-[120px]">{username}</p>
+            <p className="text-[9px] text-neutral-700">v3.2.0</p>
+          </div>
+          <button 
+            onClick={logout}
+            className="text-[10px] text-neutral-400 hover:text-white px-2 py-1 bg-white/5 hover:bg-white/10 rounded transition-colors"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </aside>
+  );
+}
+
+/* ═══ Protected Layout ═══ */
+function ProtectedLayout() {
+  return (
+    <ProtectedRoute>
+      <div className="flex min-h-screen bg-neutral-950">
+        <Sidebar />
+        <main className="flex-1 ml-[220px] min-h-screen">
+          <Outlet />
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }
 
 /* ═══ Main App ═══ */
 export function App() {
   return (
-    <BrowserRouter>
-      <div className="flex min-h-screen bg-neutral-950">
-        <Sidebar />
-        {/* Page content — offset by sidebar width */}
-        <main className="flex-1 ml-[220px] min-h-screen">
-          <Routes>
-            <Route path="/" element={<FreightIQDashboard />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          
+          <Route element={<ProtectedLayout />}>
+            <Route path="/dashboard" element={<FreightIQDashboard />} />
             <Route path="/chat" element={<NLQAssistantPage />} />
             <Route path="/planner" element={<RoutePlannerPage />} />
             <Route path="/ports" element={<PortIntelligencePage />} />
             <Route path="/forecast" element={<ForecastPage />} />
-          </Routes>
-        </main>
-      </div>
-    </BrowserRouter>
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
