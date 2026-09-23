@@ -95,14 +95,14 @@ function Sidebar() {
     <aside className="fixed left-0 top-0 z-40 h-screen w-[220px] flex flex-col border-r border-white/[0.05] bg-neutral-950">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/[0.04]">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/25 to-cyan-500/5 border border-cyan-500/20 shrink-0">
-          <svg className="h-4 w-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#d4c29d]/10 border border-[#d4c29d]/25 shrink-0 shadow-sm">
+          <span className="text-[11px] font-black font-mono tracking-tight text-[#d4c29d] select-none">
+            FIQ
+          </span>
         </div>
         <div>
-          <p className="text-sm font-bold text-white tracking-tight">Freight<span className="text-cyan-400">IQ</span></p>
-          <p className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">SIH-2026</p>
+          <p className="text-sm font-bold text-white tracking-tight">Freight<span className="text-[#d4c29d]">IQ</span></p>
+          <p className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest">SIH-2026</p>
         </div>
       </div>
 

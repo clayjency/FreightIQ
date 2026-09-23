@@ -6,6 +6,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../lib/utils";
+import { VesselRecommender } from "../components/VesselRecommender";
+import { RouteMap } from "../components/RouteMap";
 
 const API_BASE = "http://localhost:8000";
 
@@ -487,10 +489,24 @@ export function RoutePlannerPage() {
                 </div>
               </motion.div>
             )}
+
+            <VesselRecommender />
           </div>
 
           {/* ── Right Panel: Calendar + Timeline ── */}
           <div className="xl:col-span-2 space-y-5">
+            {/* Route Map */}
+            {showCalendar && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-6"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-2">Live Trade Lane</p>
+                <RouteMap origin={origin} destination={destination} />
+              </motion.div>
+            )}
+
             {/* Calendar */}
             <AnimatePresence>
               {(showCalendar || loading) && (
