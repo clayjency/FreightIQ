@@ -89,3 +89,15 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }
+
+/* Seamless input autofill override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #030e1a inset !important;
+  box-shadow: 0 0 0px 1000px #030e1a inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+

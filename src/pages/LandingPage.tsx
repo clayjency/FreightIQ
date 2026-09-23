@@ -48,8 +48,8 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#09090b] flex flex-col font-sans text-neutral-400 selection:bg-neutral-800 selection:text-neutral-200">
       
-      {/* ── Top Header Navigation (Colors matched with hero image - darker tone) ── */}
-      <header className="relative z-50 border-b border-white/[0.06] bg-[#030e1a]/92 backdrop-blur-md">
+      {/* ── Top Header Navigation (Matched with footer) ── */}
+      <header className="relative z-50 border-b border-white/[0.06] bg-[#030e1a]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           
           {/* Logo */}
@@ -91,20 +91,13 @@ export const LandingPage: React.FC = () => {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-[15px] font-medium text-neutral-300 hover:text-white px-3 py-1.5 transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/register"
-                  className="text-[15px] font-medium px-4 py-2 bg-neutral-100 text-neutral-950 rounded-lg hover:bg-white transition-colors"
-                >
-                  Get Started
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 text-[15px] font-medium px-4 py-2 bg-neutral-100 text-neutral-950 rounded-lg hover:bg-white transition-colors"
+              >
+                Sign In
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             )}
           </div>
         </div>
@@ -151,20 +144,12 @@ export const LandingPage: React.FC = () => {
                 Open Dashboard &rarr;
               </Link>
             ) : (
-              <>
-                <Link
-                  to="/register"
-                  className="w-full sm:w-auto px-6 py-3 bg-neutral-100 hover:bg-white text-neutral-950 text-sm font-semibold rounded-lg transition-colors"
-                >
-                  Get Started
-                </Link>
-                <Link
-                  to="/login"
-                  className="w-full sm:w-auto px-6 py-3 bg-neutral-900/60 hover:bg-neutral-800 border border-white/[0.08] backdrop-blur-md text-neutral-200 text-sm font-medium rounded-lg transition-colors"
-                >
-                  Sign In
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="w-full sm:w-auto px-7 py-3.5 bg-neutral-100 hover:bg-white text-neutral-950 text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-black/40"
+              >
+                Sign In &rarr;
+              </Link>
             )}
           </div>
 
@@ -252,8 +237,8 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── Footer (Color exact same as header) ── */}
-      <footer className="relative z-10 border-t border-white/[0.06] bg-[#030e1a]/92 backdrop-blur-md py-8 mt-auto">
+      {/* ── Footer (Color exact same solid tone as header) ── */}
+      <footer className="relative z-10 border-t border-white/[0.06] bg-[#030e1a] py-8 mt-auto">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-neutral-400">
           <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#d4c29d]/15 border border-[#d4c29d]/30 shadow-sm shadow-[#d4c29d]/10 shrink-0">
