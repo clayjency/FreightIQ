@@ -63,12 +63,22 @@ interface DashboardState {
 
 const API_BASE = "http://localhost:8000";
 
-const TRADE_ROUTES = [
+const DEFAULT_TRADE_ROUTES = [
+  "Newcastle → Paradip",
   "Paradip → Rotterdam",
   "Haldia → Shanghai",
   "Mundra → Fujairah",
   "Vizag → Yokohama",
   "Kandla → Houston",
+  "Newcastle → Gangavaram",
+  "Hay Point → Dhamra",
+  "Port Hedland → Dhamra",
+  "Nacala → Vizag",
+  "Richards Bay → Vizag",
+  "Banjarmasin → Haldia",
+  "Samarinda → Paradip",
+  "Hampton Roads → Paradip",
+  "Vostochny → Gangavaram",
 ];
 
 const VESSEL_CLASSES = [
@@ -79,13 +89,24 @@ const VESSEL_CLASSES = [
   "VLOC (300K DWT)",
 ];
 
+/** Fetch route names from backend, fallback to defaults */
+async function fetchRouteNames(): Promise<string[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/routes/names`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) return res.json();
+  } catch {}
+  return DEFAULT_TRADE_ROUTES;
+}
+
 /**
  * Fetches the full DashboardState from the FastAPI backend.
  * Falls back to a brief error state if the API is unreachable.
  * Swap API_BASE to your production URL for deployment.
  */
 async function fetchDashboardData(
-  route: string = TRADE_ROUTES[0],
+  route: string = DEFAULT_TRADE_ROUTES[0],
   vessel: string = VESSEL_CLASSES[0]
 ): Promise<DashboardState> {
   const params = new URLSearchParams({ route, vessel });
@@ -450,10 +471,16 @@ export function FreightIQDashboard() {
   const [data, setData] = useState<DashboardState | null>(null);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [selectedRoute, setSelectedRoute] = useState(TRADE_ROUTES[0]);
+  const [tradeRoutes, setTradeRoutes] = useState<string[]>(DEFAULT_TRADE_ROUTES);
+  const [selectedRoute, setSelectedRoute] = useState(DEFAULT_TRADE_ROUTES[0]);
   const [selectedVessel, setSelectedVessel] = useState(VESSEL_CLASSES[0]);
   const [hoveredPortIndex, setHoveredPortIndex] = useState<number | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+
+  // Load routes dynamically from backend
+  useEffect(() => {
+    fetchRouteNames().then(setTradeRoutes);
+  }, []);
 
   // Core fetch — called on mount, route/vessel change, and auto-refresh
   const loadData = useCallback(async (route: string, vessel: string) => {
@@ -623,7 +650,7 @@ export function FreightIQDashboard() {
                       id="select-trade-route"
                       label="Trade Route"
                       value={selectedRoute}
-                      options={TRADE_ROUTES}
+                      options={tradeRoutes}
                       onChange={setSelectedRoute}
                     />
                     <StyledSelect

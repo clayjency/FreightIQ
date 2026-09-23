@@ -33,6 +33,15 @@ interface RouteOption {
 }
 
 const ORIGINS = [
+  "Newcastle (AUNEW)",
+  "Hay Point (AUHPT)",
+  "Port Hedland (AUPHE)",
+  "Nacala (MZNAC)",
+  "Richards Bay (ZARBA)",
+  "Banjarmasin (IDBMS)",
+  "Samarinda (IDSMR)",
+  "Hampton Roads (USHRP)",
+  "Vostochny (RUVOS)",
   "Paradip (INPRD)",
   "Haldia (INHAL)",
   "Mundra (INMUN)",
@@ -44,6 +53,13 @@ const ORIGINS = [
 ];
 
 const DESTINATIONS = [
+  "Paradip (INPRD)",
+  "Vizag (INVTZ)",
+  "Gangavaram (INGGV)",
+  "Haldia (INHAL)",
+  "Dhamra (INDHA)",
+  "Gopalpur (INGPL)",
+  "Sagar-Sandheads (INSGS)",
   "Rotterdam (NLRTM)",
   "Shanghai (CNSHA)",
   "Fujairah (AEFUJ)",
