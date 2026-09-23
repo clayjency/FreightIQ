@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Ship } from 'lucide-react';
+import { User, Lock, Mail, Eye, EyeOff, ArrowLeft, Check, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 const API_BASE = "http://localhost:8000";
 
@@ -8,8 +9,10 @@ export const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -22,17 +25,22 @@ export const RegisterPage: React.FC = () => {
       return;
     }
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    setLoading(true);
     try {
       let res: Response;
       try {
         res = await fetch(`${API_BASE}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify({ username: username.trim(), password }),
         });
       } catch {
-        // Network error — server not reachable
-        setError('Unable to connect to the server. Please make sure the backend is running.');
+        setError('Unable to connect to server. Please ensure backend is running.');
         return;
       }
 
@@ -42,7 +50,6 @@ export const RegisterPage: React.FC = () => {
           const errorData = await res.json();
           detail = errorData.detail || detail;
         } catch {
-          // Response body wasn't valid JSON — use status text as fallback
           detail = res.statusText || detail;
         }
         setError(detail);
@@ -50,86 +57,169 @@ export const RegisterPage: React.FC = () => {
       }
 
       setSuccess('Account created successfully! Redirecting to login...');
-      setTimeout(() => navigate('/login'), 2000);
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-        {/* Decorative element */}
-        <div className="absolute top-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl -ml-16 -mt-16" />
-        
-        <div className="flex justify-center mb-8">
-          <div className="h-16 w-16 bg-purple-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30">
-            <Ship className="h-8 w-8 text-purple-400" />
-          </div>
-        </div>
-        
-        <h2 className="text-3xl font-bold text-white text-center mb-2">Create Account</h2>
-        <p className="text-gray-400 text-center mb-8">Join FreightIQ today</p>
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-[#09090b] font-sans selection:bg-[#d4c29d]/30 selection:text-white">
+      {/* ── Background Port Image (Balanced & Subtle Night Port) ── */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/port_auth_bg.jpg"
+          alt="Commercial Shipping Port Terminal"
+          className="w-full h-full object-cover object-center filter brightness-[0.48] contrast-[1.10] saturate-[1.10] scale-105 transform motion-safe:transition-transform motion-safe:duration-1000"
+        />
+        {/* Soft, slightly deeper cinematic overlays for comfortable contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#030e1a]/68 to-[#030e1a]/72" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#09090b]/45 to-[#09090b]/90" />
+      </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm text-center">
-            {error}
+      {/* ── Top Brand Header ── */}
+      <header className="absolute top-0 left-0 right-0 z-20 px-6 py-5 flex items-center justify-between">
+        <Link 
+          to="/" 
+          className="flex items-center gap-2.5 group transition-opacity hover:opacity-90"
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#d4c29d]/15 border border-[#d4c29d]/30 shadow-sm shadow-[#d4c29d]/10 shrink-0">
+            <span className="text-xs font-black font-mono tracking-tight text-[#d4c29d] select-none">
+              FIQ
+            </span>
           </div>
-        )}
-        
-        {success && (
-          <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-xl mb-6 text-sm text-center">
-            {success}
-          </div>
-        )}
+          <span className="text-lg font-bold tracking-tight text-white">
+            Freight<span className="text-[#d4c29d]">IQ</span>
+          </span>
+        </Link>
 
-        <form onSubmit={handleRegister} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Confirm Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              required
-            />
-          </div>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] px-3 py-1.5 rounded-lg backdrop-blur-md transition-all"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Back to Home</span>
+        </Link>
+      </header>
+
+      {/* ── Main Registration Card (Matching reference design - Subdued Dark) ── */}
+      <div className="relative z-10 w-full max-w-[420px] my-auto">
+        {/* Card Body */}
+        <div className="relative rounded-[26px] border border-white/[0.08] bg-[#070c16]/95 backdrop-blur-2xl p-8 sm:p-10 shadow-2xl shadow-black">
           
-          <button
-            type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-500 text-white font-medium py-3 px-4 rounded-xl transition-colors mt-4 shadow-lg shadow-purple-500/20"
-          >
-            Create Account
-          </button>
-        </form>
+          {/* Top Circular Profile Avatar Badge */}
+          <div className="flex justify-center mb-8">
+            <div className="h-16 w-16 rounded-full border border-white/[0.12] bg-white/[0.03] flex items-center justify-center shadow-inner">
+              <User className="h-8 w-8 text-neutral-300 stroke-[1.5]" />
+            </div>
+          </div>
 
-        <p className="mt-8 text-center text-sm text-gray-500">
-          Already have an account?{' '}
-          <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
-            Sign in here
-          </Link>
-        </p>
+          {/* Feedback Messages */}
+          {error && (
+            <div className="flex items-center gap-2 bg-rose-500/15 border border-rose-500/30 text-rose-300 px-3.5 py-2.5 rounded-xl mb-6 text-xs text-left backdrop-blur-sm animate-in fade-in duration-200">
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+              <span className="flex-1 leading-snug">{error}</span>
+            </div>
+          )}
+          {success && (
+            <div className="flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 px-3.5 py-2.5 rounded-xl mb-6 text-xs text-left backdrop-blur-sm animate-in fade-in duration-200">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+              <span className="flex-1 leading-snug">{success}</span>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleRegister} className="space-y-5">
+            
+            {/* Email / Username Underline Input */}
+            <div className="group relative border-b border-white/[0.12] hover:border-white/[0.22] focus-within:!border-[#d4c29d]/75 transition-colors pb-2 pt-1 flex items-center gap-3">
+              <Mail className="h-5 w-5 text-neutral-500 group-focus-within:text-[#d4c29d] transition-colors shrink-0" />
+              <input
+                id="register-username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Email ID / Username"
+                className="w-full bg-transparent text-neutral-100 placeholder:text-neutral-500 text-[15px] font-normal tracking-wide focus:outline-none"
+                required
+                autoComplete="username"
+              />
+            </div>
+
+            {/* Password Underline Input */}
+            <div className="group relative border-b border-white/[0.12] hover:border-white/[0.22] focus-within:!border-[#d4c29d]/75 transition-colors pb-2 pt-1 flex items-center gap-3">
+              <Lock className="h-5 w-5 text-neutral-500 group-focus-within:text-[#d4c29d] transition-colors shrink-0" />
+              <input
+                id="register-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password (min. 6 characters)"
+                className="w-full bg-transparent text-neutral-100 placeholder:text-neutral-500 text-[15px] font-normal tracking-wide focus:outline-none pr-2"
+                required
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-neutral-500 hover:text-white transition-colors cursor-pointer p-0.5"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+
+            {/* Confirm Password Underline Input */}
+            <div className="group relative border-b border-white/[0.12] hover:border-white/[0.22] focus-within:!border-[#d4c29d]/75 transition-colors pb-2 pt-1 flex items-center gap-3">
+              <Lock className="h-5 w-5 text-neutral-500 group-focus-within:text-[#d4c29d] transition-colors shrink-0" />
+              <input
+                id="register-confirm-password"
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm Password"
+                className="w-full bg-transparent text-neutral-100 placeholder:text-neutral-500 text-[15px] font-normal tracking-wide focus:outline-none"
+                required
+                autoComplete="new-password"
+              />
+            </div>
+
+            {/* Action Buttons Stack (REGISTER + LOGIN) */}
+            <div className="pt-4 space-y-3">
+              {/* Primary REGISTER Button */}
+              <button
+                id="register-submit-button"
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#d4c29d] hover:bg-[#c4b087] text-neutral-950 font-bold text-sm tracking-wider uppercase transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <span className="h-4 w-4 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />
+                    <span>Creating Account...</span>
+                  </>
+                ) : (
+                  <span>REGISTER</span>
+                )}
+              </button>
+
+              {/* Secondary LOGIN Button */}
+              <Link
+                id="register-to-login-link"
+                to="/login"
+                className="w-full block text-center py-3.5 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-neutral-300 hover:text-white font-semibold text-sm tracking-wider uppercase transition-all active:scale-[0.99]"
+              >
+                LOGIN
+              </Link>
+            </div>
+
+          </form>
+
+        </div>
       </div>
     </div>
   );
 };
+
