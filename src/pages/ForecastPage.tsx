@@ -28,11 +28,21 @@ interface ForecastPoint {
 }
 
 const TRADE_ROUTES = [
+  "Newcastle → Paradip",
   "Paradip → Rotterdam",
   "Haldia → Shanghai",
   "Mundra → Fujairah",
   "Vizag → Yokohama",
   "Kandla → Houston",
+  "Newcastle → Gangavaram",
+  "Hay Point → Dhamra",
+  "Port Hedland → Dhamra",
+  "Nacala → Vizag",
+  "Richards Bay → Vizag",
+  "Banjarmasin → Haldia",
+  "Samarinda → Paradip",
+  "Hampton Roads → Paradip",
+  "Vostochny → Gangavaram",
 ];
 
 const VESSEL_CLASSES = [
