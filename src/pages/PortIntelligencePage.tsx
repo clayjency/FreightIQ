@@ -4,8 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from "recharts";
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
 import { cn } from "../lib/utils";
 
 const API_BASE = "http://localhost:8000";
@@ -27,105 +26,29 @@ interface PortConstraint {
 }
 
 const VESSEL_CLASSES = [
-  { name: "Handysize (32K DWT)", draft: 10.1, color: "#22d3ee" },
-  { name: "Supramax (52K DWT)", draft: 12.6, color: "#a78bfa" },
-  { name: "Panamax (75K DWT)", draft: 13.6, color: "#fbbf24" },
-  { name: "Capesize (180K DWT)", draft: 18.2, color: "#f97316" },
-  { name: "VLOC (300K DWT)", draft: 23.0, color: "#f43f5e" },
+  { name: "Handysize (32K DWT)", draft: 10.1 },
+  { name: "Supramax (52K DWT)", draft: 12.6 },
+  { name: "Panamax (75K DWT)", draft: 13.6 },
+  { name: "Capesize (180K DWT)", draft: 18.2 },
+  { name: "VLOC (300K DWT)", draft: 23.0 },
 ];
 
-const RISK_CONFIG: Record<string, { badge: string; dot: string; bar: string; glow: string }> = {
-  Low: { badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25", dot: "bg-emerald-400", bar: "bg-emerald-500", glow: "shadow-[0_0_8px_rgba(52,211,153,0.3)]" },
-  Moderate: { badge: "bg-yellow-500/10 text-yellow-400 border-yellow-500/25", dot: "bg-yellow-400", bar: "bg-yellow-500", glow: "shadow-[0_0_8px_rgba(234,179,8,0.3)]" },
-  High: { badge: "bg-orange-500/10 text-orange-400 border-orange-500/25", dot: "bg-orange-400", bar: "bg-orange-500", glow: "shadow-[0_0_8px_rgba(249,115,22,0.3)]" },
-  Critical: { badge: "bg-rose-500/10 text-rose-400 border-rose-500/25", dot: "bg-rose-400", bar: "bg-rose-500", glow: "shadow-[0_0_8px_rgba(244,63,94,0.4)]" },
-};
-
-const FIT_CONFIG = {
-  Optimal: { icon: "✓", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-  Marginal: { icon: "△", color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20" },
-  Violation: { icon: "✕", color: "text-rose-400", bg: "bg-rose-500/10 border-rose-500/20" },
+const RISK_CONFIG: Record<string, { color: string; bg: string; dot: string; }> = {
+  Low: { color: "text-[#22A06B]", bg: "bg-[#22A06B]", dot: "bg-[#22A06B]" },
+  Moderate: { color: "text-[#D99A24]", bg: "bg-[#D99A24]", dot: "bg-[#D99A24]" },
+  High: { color: "text-[#EA580C]", bg: "bg-[#EA580C]", dot: "bg-[#EA580C]" },
+  Critical: { color: "text-[#D94A4A]", bg: "bg-[#D94A4A]", dot: "bg-[#D94A4A]" },
 };
 
 /* ═══════════════════════════════════════════════════════════════════
-   Vessel Compatibility Matrix
+   Helpers & Components
    ═══════════════════════════════════════════════════════════════════ */
 
-function CompatibilityMatrix({ ports }: { ports: PortConstraint[] }) {
-  return (
-    <div className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md overflow-hidden">
-      <div className="px-6 py-4 border-b border-white/[0.04]">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500">Vessel × Port Compatibility Matrix</p>
-        <p className="text-xs text-neutral-600 mt-0.5">Draft-based compliance for all vessel classes</p>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-white/[0.04]">
-              <th className="text-left py-3 px-4 text-[10px] font-semibold uppercase tracking-wider text-neutral-600 w-36">Port</th>
-              <th className="text-center py-3 px-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-600">Draft Limit</th>
-              {VESSEL_CLASSES.map(v => (
-                <th key={v.name} className="text-center py-3 px-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-600 min-w-[90px]">
-                  <div>{v.name.split(" ")[0]}</div>
-                  <div style={{ color: v.color }} className="font-mono normal-case">{v.draft}m</div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {ports.map((port, i) => {
-              const risk = RISK_CONFIG[port.riskLevel];
-              return (
-                <motion.tr
-                  key={port.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
-                >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className={cn("h-2 w-2 rounded-full shrink-0", risk.dot)} />
-                      <span className="font-semibold text-white text-xs truncate">{port.portName}</span>
-                    </div>
-                    <p className="text-[10px] text-neutral-600 ml-4 truncate">{port.region.split(",")[0]}</p>
-                  </td>
-                  <td className="py-3 px-2 text-center font-mono text-neutral-300 text-xs">
-                    {port.draftLimitM}m
-                  </td>
-                  {VESSEL_CLASSES.map(v => {
-                    const fit = v.draft <= port.draftLimitM - 1 ? "Optimal" : v.draft <= port.draftLimitM + 0.5 ? "Marginal" : "Violation";
-                    const fitCfg = FIT_CONFIG[fit];
-                    return (
-                      <td key={v.name} className="py-3 px-3 text-center">
-                        <span className={cn("inline-flex items-center justify-center h-6 w-6 rounded-lg text-xs font-bold border", fitCfg.bg, fitCfg.color)}>
-                          {fitCfg.icon}
-                        </span>
-                      </td>
-                    );
-                  })}
-                </motion.tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div className="px-6 py-3 border-t border-white/[0.04] flex items-center gap-5 bg-neutral-900/30">
-        {Object.entries(FIT_CONFIG).map(([fit, cfg]) => (
-          <div key={fit} className="flex items-center gap-1.5">
-            <span className={cn("inline-flex items-center justify-center h-5 w-5 rounded text-[10px] font-bold border", cfg.bg, cfg.color)}>{cfg.icon}</span>
-            <span className="text-[10px] text-neutral-500">{fit}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+function SkeletonBlock({ className }: { className?: string }) {
+  return <div className={cn("skeleton-shimmer rounded-md bg-[#171B1F]", className)} />;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Port Detail Card
-   ═══════════════════════════════════════════════════════════════════ */
-
+// Compact Port Card
 function PortCard({
   port,
   isSelected,
@@ -139,74 +62,60 @@ function PortCard({
   const congestionPct = Math.min((port.congestionAlertHrs / 96) * 100, 100);
 
   return (
-    <motion.button
+    <button
       id={`port-card-${port.id}`}
       onClick={onClick}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
       className={cn(
-        "w-full text-left rounded-2xl border p-4 transition-all duration-200",
+        "w-full text-left rounded-md border p-3 transition-colors duration-150",
         isSelected
-          ? "border-cyan-500/30 bg-cyan-500/[0.04]"
-          : "border-white/[0.06] bg-neutral-900/60 hover:border-white/[0.1] hover:bg-neutral-800/60"
+          ? "border-[#19A7CE] bg-[#171B1F]"
+          : "border-[#252A2E] bg-[#111417] hover:border-[#3A4147] hover:bg-[#171B1F]"
       )}
     >
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-2">
         <div>
           <div className="flex items-center gap-2">
-            <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", risk.dot, port.riskLevel === "Critical" && "animate-pulse")} />
-            <p className="font-bold text-white text-sm">{port.portName}</p>
+            <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", risk.dot)} />
+            <p className="font-semibold text-[#F1F3F4] text-sm">{port.portName}</p>
           </div>
-          <p className="text-[10px] text-neutral-600 mt-0.5 ml-4">{port.region}</p>
+          <p className="text-xs text-[#68727A] mt-0.5 ml-3.5">{port.region.split(",")[0]}</p>
         </div>
-        <span className={cn("text-[9px] font-bold uppercase tracking-widest rounded-full border px-2 py-0.5", risk.badge)}>
-          {port.riskLevel}
-        </span>
+        {port.tideDependency && (
+          <span className="text-[10px] text-[#19A7CE] border border-[#19A7CE]/30 bg-[#19A7CE]/10 px-1.5 py-0.5 rounded-sm">
+            Tidal
+          </span>
+        )}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        {[
-          { label: "Draft", value: `${port.draftLimitM}m` },
-          { label: "Wait", value: `${port.berthWaitDays}d` },
-          { label: "Congestion", value: `${port.congestionAlertHrs}h` },
-        ].map(s => (
-          <div key={s.label} className="rounded-lg bg-neutral-800/40 px-2 py-1.5 text-center">
-            <p className="text-xs font-bold font-mono text-neutral-200">{s.value}</p>
-            <p className="text-[9px] text-neutral-600 uppercase tracking-wider">{s.label}</p>
-          </div>
-        ))}
+      <div className="grid grid-cols-3 gap-2 mb-2.5 ml-3.5">
+        <div>
+          <span className="text-[10px] text-[#68727A] block">Draft</span>
+          <span className="text-xs font-mono text-[#F1F3F4] font-medium">{port.draftLimitM}m</span>
+        </div>
+        <div>
+          <span className="text-[10px] text-[#68727A] block">Wait</span>
+          <span className="text-xs font-mono text-[#F1F3F4] font-medium">{port.berthWaitDays}d</span>
+        </div>
+        <div>
+          <span className="text-[10px] text-[#68727A] block">Congestion</span>
+          <span className="text-xs font-mono text-[#F1F3F4] font-medium">{port.congestionAlertHrs}h</span>
+        </div>
       </div>
 
-      {/* Congestion bar */}
-      <div>
-        <div className="flex justify-between text-[9px] text-neutral-600 mb-1">
-          <span>Congestion Level</span>
-          <span>{port.congestionAlertHrs}h</span>
-        </div>
-        <div className="h-1.5 rounded-full bg-neutral-800 overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${congestionPct}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className={cn("h-full rounded-full", risk.bar)}
+      <div className="ml-3.5 mt-1">
+        <div className="h-1 rounded-full bg-[#0B0D0F] overflow-hidden">
+          <div
+            className={cn("h-full rounded-full transition-all duration-500", risk.bg)}
+            style={{ width: `${congestionPct}%` }}
           />
         </div>
       </div>
-
-      {port.tideDependency && (
-        <div className="mt-2.5 flex items-center gap-1.5">
-          <span className="text-[10px] text-amber-400/70">⚡ Tide-dependent operations</span>
-        </div>
-      )}
-    </motion.button>
+    </button>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Port Detail Panel
-   ═══════════════════════════════════════════════════════════════════ */
-
-function PortDetailPanel({ port }: { port: PortConstraint }) {
+// Right Panel
+function PortDetailPanel({ port, vesselClass }: { port: PortConstraint, vesselClass: string }) {
   const risk = RISK_CONFIG[port.riskLevel];
   const radarData = [
     { metric: "Congestion", value: Math.min((port.congestionAlertHrs / 96) * 100, 100) },
@@ -217,86 +126,93 @@ function PortDetailPanel({ port }: { port: PortConstraint }) {
   ];
 
   return (
-    <motion.div
-      key={port.id}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-6 h-full"
-    >
-      <div className="flex items-start justify-between mb-6">
+    <div className="rounded-lg border border-[#252A2E] bg-[#111417] p-5 h-full flex flex-col">
+      <div className="flex items-start justify-between mb-5">
         <div>
-          <h2 className="text-2xl font-extrabold text-white">{port.portName}</h2>
-          <p className="text-sm text-neutral-500 mt-0.5">{port.region}</p>
+          <h2 className="text-xl font-bold text-[#F1F3F4]">{port.portName}</h2>
+          <p className="text-xs text-[#9AA3AA] mt-0.5">{port.region}</p>
         </div>
-        <span className={cn("text-[11px] font-bold uppercase tracking-widest rounded-full border px-3 py-1", risk.badge, risk.glow)}>
-          {port.riskLevel}
+        <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-sm border border-[#252A2E] bg-[#171B1F]", risk.color)}>
+          {port.riskLevel} Risk
         </span>
       </div>
 
-      {/* Radar chart */}
-      <div className="h-48 mb-5">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart data={radarData}>
-            <PolarGrid stroke="rgba(255,255,255,0.05)" />
-            <PolarAngleAxis dataKey="metric" tick={{ fill: "#6b7280", fontSize: 10 }} />
-            <Radar
-              name="Risk"
-              dataKey="value"
-              stroke="#22d3ee"
-              fill="#22d3ee"
-              fillOpacity={0.15}
-              strokeWidth={1.5}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Metrics grid */}
-      <div className="grid grid-cols-2 gap-3">
-        {[
-          { label: "Max Draft", value: `${port.draftLimitM}m`, icon: "⚓" },
-          { label: "Berth Wait", value: `${port.berthWaitDays} days`, icon: "⏳" },
-          { label: "Congestion", value: `${port.congestionAlertHrs}h`, icon: "🚦" },
-          { label: "Tidal Ops", value: port.tideDependency ? "Required" : "No", icon: "🌊" },
-        ].map(m => (
-          <div key={m.label} className="rounded-xl bg-neutral-800/40 border border-white/[0.04] p-3">
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-base">{m.icon}</span>
-              <span className="text-[9px] text-neutral-500 uppercase tracking-wider">{m.label}</span>
-            </div>
-            <p className="text-sm font-bold font-mono text-white">{m.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Vessel fit across all classes */}
-      <div className="mt-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600 mb-2">Vessel Fit Assessment</p>
-        <div className="space-y-1.5">
-          {VESSEL_CLASSES.map(v => {
-            const fit = v.draft <= port.draftLimitM - 1 ? "Optimal" : v.draft <= port.draftLimitM + 0.5 ? "Marginal" : "Violation";
-            const fitCfg = FIT_CONFIG[fit];
-            return (
-              <div key={v.name} className="flex items-center justify-between rounded-lg bg-neutral-800/30 px-3 py-1.5">
-                <span className="text-[11px] text-neutral-400">{v.name}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-neutral-600">{v.draft}m draft</span>
-                  <span className={cn("text-[10px] font-bold", fitCfg.color)}>{fit}</span>
+      <div className="flex flex-col xl:flex-row gap-6 mb-6">
+        <div className="w-full xl:w-1/2 h-[220px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={radarData} outerRadius="70%">
+              <PolarGrid stroke="#252A2E" />
+              <PolarAngleAxis dataKey="metric" tick={{ fill: "#68727A", fontSize: 10 }} />
+              <Radar
+                name="Risk"
+                dataKey="value"
+                stroke="#19A7CE"
+                fill="#19A7CE"
+                fillOpacity={0.15}
+                strokeWidth={1.5}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="w-full xl:w-1/2 flex flex-col justify-center">
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: "Max Draft", value: `${port.draftLimitM}m`, icon: "⚓" },
+                { label: "Berth Wait", value: `${port.berthWaitDays} days`, icon: "⏳" },
+                { label: "Congestion", value: `${port.congestionAlertHrs}h`, icon: "🚦" },
+                { label: "Tidal Ops", value: port.tideDependency ? "Required" : "No", icon: "🌊" },
+              ].map(m => (
+                <div key={m.label} className="rounded-md border border-[#252A2E] bg-[#171B1F] p-3 flex flex-col justify-between">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="text-[#68727A] text-sm">{m.icon}</span>
+                    <span className="text-xs text-[#68727A] font-medium">{m.label}</span>
+                  </div>
+                  <p className="text-lg font-bold font-mono text-[#F1F3F4]">{m.value}</p>
                 </div>
-              </div>
-            );
-          })}
+              ))}
+            </div>
         </div>
       </div>
 
-      {/* Recommendation */}
+      <div className="mb-6">
+        <h3 className="text-xs font-semibold text-[#F1F3F4] mb-3">Vessel Fit Assessment</h3>
+        <div className="overflow-hidden rounded-md border border-[#252A2E]">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-[#252A2E] bg-[#171B1F]">
+                <th className="py-2.5 px-4 font-medium text-[#68727A]">Vessel Class</th>
+                <th className="py-2.5 px-4 font-medium text-[#68727A]">Draft</th>
+                <th className="py-2.5 px-4 font-medium text-[#68727A]">Assessment</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#252A2E]">
+              {VESSEL_CLASSES.map(v => {
+                const fit = v.draft <= port.draftLimitM - 1 ? "OPTIMAL" : v.draft <= port.draftLimitM + 0.5 ? "MARGINAL" : "VIOLATION";
+                const fitColor = fit === "OPTIMAL" ? "text-[#22A06B]" : fit === "MARGINAL" ? "text-[#D99A24]" : "text-[#D94A4A]";
+                
+                return (
+                  <tr key={v.name} className={cn(v.name === vesselClass ? "bg-[#171B1F]/50" : "")}>
+                    <td className="py-2.5 px-4 font-medium text-[#F1F3F4]">{v.name}</td>
+                    <td className="py-2.5 px-4 font-mono text-[#9AA3AA]">{v.draft.toFixed(1)}m</td>
+                    <td className="py-2.5 px-4">
+                      <span className={cn("font-semibold text-[10px] tracking-wide", fitColor)}>{fit}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div className={cn(
-        "mt-4 rounded-xl p-3 border text-[11px]",
-        port.riskLevel === "Critical" ? "border-rose-500/20 bg-rose-500/[0.04] text-rose-300" :
-        port.riskLevel === "High" ? "border-orange-500/20 bg-orange-500/[0.04] text-orange-300" :
-        "border-cyan-500/20 bg-cyan-500/[0.04] text-cyan-300"
+        "mt-auto rounded-md border p-4 text-sm",
+        port.riskLevel === "Critical" ? "border-[#D94A4A]/30 bg-[#D94A4A]/10 text-[#D94A4A]" :
+        port.riskLevel === "High" ? "border-[#EA580C]/30 bg-[#EA580C]/10 text-[#EA580C]" :
+        port.riskLevel === "Moderate" ? "border-[#D99A24]/30 bg-[#D99A24]/10 text-[#D99A24]" :
+        "border-[#22A06B]/30 bg-[#22A06B]/10 text-[#22A06B]"
       )}>
-        <span className="font-semibold">⚠ Recommendation: </span>
+        <span className="font-semibold block mb-1 text-xs uppercase tracking-wider">Recommendation</span>
         {port.riskLevel === "Critical"
           ? `Avoid ${port.portName} for Panamax+ vessels. High congestion (${port.congestionAlertHrs}h) and draft constraints make this port operationally high-risk.`
           : port.riskLevel === "High"
@@ -306,7 +222,7 @@ function PortDetailPanel({ port }: { port: PortConstraint }) {
           : `${port.portName} is clear for operations. Optimal conditions for current vessel traffic.`
         }
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -320,7 +236,6 @@ export function PortIntelligencePage() {
   const [selectedPort, setSelectedPort] = useState<PortConstraint | null>(null);
   const [selectedVessel, setSelectedVessel] = useState(VESSEL_CLASSES[1].name);
   const [filterRisk, setFilterRisk] = useState<string>("All");
-  const [view, setView] = useState<"cards" | "matrix">("cards");
 
   const loadPorts = async (vessel: string) => {
     setLoading(true);
@@ -333,7 +248,6 @@ export function PortIntelligencePage() {
         if (!selectedPort) setSelectedPort(data[0]);
       }
     } catch {
-      // Offline: use static fallback
       console.warn("API offline — port data unavailable");
     } finally {
       setLoading(false);
@@ -344,128 +258,129 @@ export function PortIntelligencePage() {
     loadPorts(selectedVessel);
   }, [selectedVessel]);
 
+  useEffect(() => {
+      if (ports.length > 0 && selectedPort) {
+          const updatedSelected = ports.find(p => p.id === selectedPort.id);
+          if (updatedSelected) {
+              setSelectedPort(updatedSelected);
+          } else {
+              setSelectedPort(ports[0]);
+          }
+      }
+  }, [ports]);
+
   const filteredPorts = filterRisk === "All" ? ports : ports.filter(p => p.riskLevel === filterRisk);
-  const riskCounts = { All: ports.length, Low: 0, Moderate: 0, High: 0, Critical: 0 };
-  ports.forEach(p => { (riskCounts as any)[p.riskLevel]++; });
-
+  
   return (
-    <div className="min-h-screen bg-neutral-950 relative">
-      <div className="absolute inset-0 grid-bg grid-bg-mask pointer-events-none" />
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-8">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-8 w-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                <svg className="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">Port Intelligence</h1>
-                <p className="text-sm text-neutral-500">Real-time constraints, draft compliance & risk across Indian ports</p>
-              </div>
+    <div className="min-h-screen bg-[#0B0D0F] text-[#9AA3AA]">
+      {/* ── Header ── */}
+      <header className="border-b border-[#252A2E] bg-[#111417]">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F1F3F4]">
+                Port Intelligence
+              </h1>
             </div>
-
-            {/* View toggle */}
-            <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-neutral-900/60 p-1">
-              {([["cards", "Cards"], ["matrix", "Matrix"]] as [string, string][]).map(([v, label]) => (
-                <button
-                  key={v}
-                  id={`btn-view-${v}`}
-                  onClick={() => setView(v as "cards" | "matrix")}
-                  className={cn(
-                    "rounded-lg px-4 py-1.5 text-xs font-semibold transition-all",
-                    view === v ? "bg-neutral-700 text-white" : "text-neutral-500 hover:text-neutral-300"
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <p className="mt-0.5 text-xs sm:text-sm text-[#9AA3AA]">
+              Real-time constraints, draft compliance & risk across Indian ports
+            </p>
           </div>
-        </motion.div>
+        </div>
+      </header>
 
+      {/* ── Main Container ── */}
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 py-5 sm:py-6">
+        
         {/* Controls */}
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          {/* Vessel selector */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">Vessel:</label>
-            <select
-              id="select-vessel-ports"
-              value={selectedVessel}
-              onChange={e => setSelectedVessel(e.target.value)}
-              className="appearance-none rounded-xl border border-white/[0.06] bg-neutral-800/60 px-3 py-1.5 text-xs text-neutral-200 outline-none focus:border-cyan-500/40 transition-all"
-            >
-              {VESSEL_CLASSES.map(v => <option key={v.name} value={v.name} className="bg-neutral-900">{v.name}</option>)}
-            </select>
+            <label htmlFor="select-vessel" className="text-xs font-medium text-[#68727A]">Vessel:</label>
+            <div className="relative">
+              <select
+                id="select-vessel"
+                value={selectedVessel}
+                onChange={e => setSelectedVessel(e.target.value)}
+                className={cn(
+                  "appearance-none rounded-md border border-[#252A2E] bg-[#171B1F]",
+                  "px-3 py-1.5 pr-8 text-xs text-[#F1F3F4]",
+                  "outline-none transition-colors duration-150",
+                  "hover:border-[#3A4147] focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]/20"
+                )}
+              >
+                {VESSEL_CLASSES.map(v => <option key={v.name} value={v.name}>{v.name}</option>)}
+              </select>
+              <svg
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#68727A]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
 
-          {/* Risk filters */}
-          <div className="flex items-center gap-1.5">
+          <div className="hidden sm:block w-px h-5 bg-[#252A2E]" />
+
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs font-medium text-[#68727A] mr-1">Risk filters:</span>
             {(["All", "Low", "Moderate", "High", "Critical"] as const).map(risk => (
               <button
                 key={risk}
                 id={`filter-${risk.toLowerCase()}`}
                 onClick={() => setFilterRisk(risk)}
                 className={cn(
-                  "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-widest transition-all border",
+                  "rounded-md px-3 py-1 text-xs font-medium transition-colors border",
                   filterRisk === risk
-                    ? risk === "All" ? "bg-neutral-600 text-white border-neutral-500"
-                      : RISK_CONFIG[risk]?.badge ?? "bg-neutral-600 text-white border-neutral-500"
-                    : "text-neutral-600 border-white/[0.05] hover:text-neutral-400"
+                    ? "bg-[#171B1F] text-[#F1F3F4] border-[#3A4147]"
+                    : "bg-transparent text-[#9AA3AA] border-transparent hover:bg-[#171B1F]/50"
                 )}
               >
-                {risk} {riskCounts[risk] > 0 && riskCounts[risk] !== ports.length ? `(${(riskCounts as any)[risk]})` : ""}
+                {risk.toUpperCase()}
               </button>
             ))}
           </div>
         </div>
 
-        {view === "matrix" ? (
-          <AnimatePresence>
-            {loading ? (
-              <div className="h-64 rounded-3xl bg-neutral-900/60 skeleton-shimmer" />
-            ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <CompatibilityMatrix ports={filteredPorts} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-            {/* Port Cards */}
-            <div className="xl:col-span-1 space-y-3 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
-              {loading
-                ? [...Array(5)].map((_, i) => (
-                    <div key={i} className="h-32 rounded-2xl bg-neutral-900/60 skeleton-shimmer" />
-                  ))
-                : filteredPorts.map(port => (
-                    <PortCard
-                      key={port.id}
-                      port={port}
-                      isSelected={selectedPort?.id === port.id}
-                      onClick={() => setSelectedPort(port)}
-                    />
-                  ))
-              }
-            </div>
-
-            {/* Detail Panel */}
-            <div className="xl:col-span-2">
-              {loading ? (
-                <div className="h-full rounded-3xl bg-neutral-900/60 skeleton-shimmer min-h-96" />
-              ) : selectedPort ? (
-                <PortDetailPanel port={selectedPort} />
-              ) : (
-                <div className="h-full rounded-3xl border border-dashed border-white/[0.06] flex items-center justify-center text-neutral-600 min-h-96">
-                  Select a port to view details
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          {/* LEFT: Port List (4 cols) */}
+          <section aria-label="Port Monitoring List" className="lg:col-span-4 xl:col-span-3 space-y-3 max-h-[80vh] overflow-y-auto pr-1">
+            {loading
+              ? [...Array(6)].map((_, i) => (
+                  <SkeletonBlock key={i} className="h-[104px] w-full" />
+                ))
+              : filteredPorts.map(port => (
+                  <PortCard
+                    key={port.id}
+                    port={port}
+                    isSelected={selectedPort?.id === port.id}
+                    onClick={() => setSelectedPort(port)}
+                  />
+                ))
+            }
+            {!loading && filteredPorts.length === 0 && (
+                <div className="text-xs text-[#68727A] py-4 text-center border border-dashed border-[#252A2E] rounded-md">
+                    No ports match the selected filter.
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+            )}
+          </section>
+
+          {/* RIGHT: Detail Panel (8 cols) */}
+          <section aria-label="Port Intelligence Details" className="lg:col-span-8 xl:col-span-9 h-full">
+            {loading ? (
+              <SkeletonBlock className="h-full min-h-[500px] w-full" />
+            ) : selectedPort ? (
+              <PortDetailPanel port={selectedPort} vesselClass={selectedVessel} />
+            ) : (
+              <div className="h-full rounded-lg border border-dashed border-[#252A2E] flex items-center justify-center text-xs text-[#68727A] min-h-[500px]">
+                Select a port to view detailed intelligence
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
     </div>
   );
 }

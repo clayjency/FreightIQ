@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
   AreaChart,
   Area,
@@ -77,127 +76,167 @@ export function ForecastPage() {
   const forecast12w = data.find((d) => d.week === "W+12")?.p50 || 0;
 
   return (
-    <div className="min-h-screen bg-neutral-950 relative">
-      <div className="absolute inset-0 grid-bg grid-bg-mask pointer-events-none" />
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-8">
-        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-8 w-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-              <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Rate Forecast</h1>
-          </div>
-          <p className="text-sm text-neutral-500 ml-11">P10 / P50 / P90 probability bands and historical analysis.</p>
-        </motion.div>
+    <div className="flex flex-col h-screen bg-[#0B0D0F] text-[#9AA3AA] overflow-hidden">
+      {/* ── Top Header ── */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-[#252A2E] bg-[#111417] shrink-0">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F1F3F4]">Rate Forecast</h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-[#9AA3AA]">
+            P10 / P50 / P90 probability bands and historical analysis.
+          </p>
+        </div>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Controls */}
-          <div className="lg:col-span-1 space-y-4">
-            <div className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600 block mb-1.5">Trade Route</label>
-                  <select
-                    value={route}
-                    onChange={(e) => setRoute(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-white/[0.06] bg-neutral-800/60 px-4 py-2.5 text-sm text-neutral-200 outline-none focus:border-cyan-500/40 transition-all"
-                  >
-                    {TRADE_ROUTES.map((r) => (
-                      <option key={r} value={r} className="bg-neutral-900">{r}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600 block mb-1.5">Vessel Class</label>
-                  <select
-                    value={vessel}
-                    onChange={(e) => setVessel(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-white/[0.06] bg-neutral-800/60 px-4 py-2.5 text-sm text-neutral-200 outline-none focus:border-cyan-500/40 transition-all"
-                  >
-                    {VESSEL_CLASSES.map((v) => (
-                      <option key={v} value={v} className="bg-neutral-900">{v}</option>
-                    ))}
-                  </select>
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+        <div className="max-w-[1400px] mx-auto space-y-6">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 h-full min-h-[600px]">
+            {/* Left Column: Controls & Summary */}
+            <div className="xl:col-span-1 flex flex-col gap-6">
+              
+              {/* Forecast Controls */}
+              <div className="rounded-lg border border-[#252A2E] bg-[#111417] p-5">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-[#68727A] block mb-2">Trade Route</label>
+                    <select
+                      value={route}
+                      onChange={(e) => setRoute(e.target.value)}
+                      className="w-full appearance-none rounded-md border border-[#252A2E] bg-[#171B1F] px-3 py-2.5 text-sm text-[#F1F3F4] outline-none focus:border-[#19A7CE] transition-colors"
+                    >
+                      {TRADE_ROUTES.map((r) => (
+                        <option key={r} value={r} className="bg-[#171B1F]">{r}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-[#68727A] block mb-2">Vessel Class</label>
+                    <select
+                      value={vessel}
+                      onChange={(e) => setVessel(e.target.value)}
+                      className="w-full appearance-none rounded-md border border-[#252A2E] bg-[#171B1F] px-3 py-2.5 text-sm text-[#F1F3F4] outline-none focus:border-[#19A7CE] transition-colors"
+                    >
+                      {VESSEL_CLASSES.map((v) => (
+                        <option key={v} value={v} className="bg-[#171B1F]">{v}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {!loading && data.length > 0 && (
-              <div className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-6 space-y-4">
-                <div className="rounded-xl bg-neutral-800/40 p-4 border border-white/[0.04]">
-                  <p className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">Current Spot</p>
-                  <p className="text-2xl font-bold font-mono text-white">${currentRate.toLocaleString()}</p>
-                </div>
-                <div className="rounded-xl bg-neutral-800/40 p-4 border border-white/[0.04]">
-                  <p className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">W+4 Forecast (P50)</p>
-                  <p className="text-xl font-bold font-mono text-cyan-400">${forecast4w.toLocaleString()}</p>
-                  <p className="text-[10px] text-neutral-500 mt-1">
-                    {((forecast4w - currentRate) / currentRate * 100).toFixed(1)}% vs Now
-                  </p>
-                </div>
-                <div className="rounded-xl bg-neutral-800/40 p-4 border border-white/[0.04]">
-                  <p className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">W+12 Forecast (P50)</p>
-                  <p className="text-xl font-bold font-mono text-purple-400">${forecast12w.toLocaleString()}</p>
-                  <p className="text-[10px] text-neutral-500 mt-1">
-                    {((forecast12w - currentRate) / currentRate * 100).toFixed(1)}% vs Now
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+              {/* Analytical Summary */}
+              {!loading && data.length > 0 && (
+                <div className="rounded-lg border border-[#252A2E] bg-[#111417] p-5 space-y-5">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#68727A]">Current Spot</p>
+                    <p className="text-xl font-bold text-[#F1F3F4]">${currentRate.toLocaleString()}</p>
+                  </div>
+                  
+                  <div className="h-px bg-[#252A2E]" />
 
-          {/* Chart */}
-          <div className="lg:col-span-3">
-            <div className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-6 h-[500px]">
-              {loading ? (
-                <div className="h-full w-full rounded-2xl bg-neutral-800/40 skeleton-shimmer" />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                    <defs>
-                      <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="colorP50" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#c084fc" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#c084fc" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="colorBand" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#c084fc" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#c084fc" stopOpacity={0.05} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis dataKey="week" stroke="#525252" tick={{ fill: "#737373", fontSize: 11 }} tickMargin={12} />
-                    <YAxis
-                      stroke="#525252"
-                      tick={{ fill: "#737373", fontSize: 11 }}
-                      tickFormatter={(v) => `$${v / 1000}k`}
-                      domain={["auto", "auto"]}
-                      width={60}
-                    />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "rgba(23,23,23,0.9)", borderColor: "rgba(255,255,255,0.1)", borderRadius: "12px", color: "#e5e5e5" }}
-                      itemStyle={{ color: "#e5e5e5" }}
-                      formatter={(value: number) => `$${value.toLocaleString()}`}
-                    />
-                    <ReferenceLine x="Now" stroke="#525252" strokeDasharray="3 3" label={{ position: "insideTopLeft", value: "NOW", fill: "#737373", fontSize: 10 }} />
-                    
-                    {/* Forecast Band */}
-                    <Area type="monotone" dataKey="p90" stroke="none" fill="url(#colorBand)" />
-                    <Area type="monotone" dataKey="p10" stroke="none" fill="#171717" />
-                    
-                    {/* Forecast P50 Line */}
-                    <Area type="monotone" dataKey="p50" stroke="#c084fc" strokeWidth={2} strokeDasharray="5 5" fill="url(#colorP50)" connectNulls />
-                    
-                    {/* Actual History */}
-                    <Area type="monotone" dataKey="actual" stroke="#22d3ee" strokeWidth={2.5} fill="url(#colorActual)" connectNulls />
-                  </AreaChart>
-                </ResponsiveContainer>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#68727A]">4-Week Outlook (P50)</p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-xl font-bold text-[#F1F3F4]">${forecast4w.toLocaleString()}</p>
+                      <span className={cn(
+                        "text-[11px] font-medium px-1.5 py-0.5 rounded-sm",
+                        forecast4w >= currentRate ? "bg-[#22A06B]/10 text-[#22A06B]" : "bg-[#D94A4A]/10 text-[#D94A4A]"
+                      )}>
+                        {forecast4w >= currentRate ? "+" : ""}{((forecast4w - currentRate) / currentRate * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-[#252A2E]" />
+
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#68727A]">12-Week Outlook (P50)</p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-xl font-bold text-[#F1F3F4]">${forecast12w.toLocaleString()}</p>
+                      <span className={cn(
+                        "text-[11px] font-medium px-1.5 py-0.5 rounded-sm",
+                        forecast12w >= currentRate ? "bg-[#22A06B]/10 text-[#22A06B]" : "bg-[#D94A4A]/10 text-[#D94A4A]"
+                      )}>
+                        {forecast12w >= currentRate ? "+" : ""}{((forecast12w - currentRate) / currentRate * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
               )}
+            </div>
+
+            {/* Right Column: Chart */}
+            <div className="xl:col-span-3 flex flex-col rounded-lg border border-[#252A2E] bg-[#111417] overflow-hidden min-h-[500px]">
+              
+              {/* Chart Header */}
+              <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 border-b border-[#252A2E]">
+                <div>
+                  <h2 className="text-sm font-bold text-[#F1F3F4]">Freight Rate Forecast</h2>
+                  <p className="text-[11px] text-[#9AA3AA] mt-0.5">P50 trajectory with P10–P90 uncertainty range</p>
+                </div>
+                <div className="flex items-center gap-4 text-[10px] text-[#68727A] font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-0.5 w-3 bg-[#19A7CE]" />
+                    <span>Actual</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-0.5 w-3 border-t-2 border-dashed border-[#19A7CE]" />
+                    <span>P50 Forecast</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-3 bg-[#19A7CE] opacity-15 rounded-sm" />
+                    <span>P10–P90 Range</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 p-5">
+                {loading ? (
+                  <div className="h-full w-full rounded-md bg-[#171B1F] animate-pulse" />
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#19A7CE" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#19A7CE" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="colorBand" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#19A7CE" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#19A7CE" stopOpacity={0.05} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#252A2E" vertical={false} />
+                      <XAxis dataKey="week" stroke="#3A4147" tick={{ fill: "#68727A", fontSize: 11 }} tickMargin={12} axisLine={false} tickLine={false} />
+                      <YAxis
+                        stroke="#3A4147"
+                        tick={{ fill: "#68727A", fontSize: 11 }}
+                        tickFormatter={(v) => `$${v / 1000}k`}
+                        domain={["auto", "auto"]}
+                        width={60}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "#171B1F", borderColor: "#252A2E", borderRadius: "6px", color: "#F1F3F4", fontSize: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
+                        itemStyle={{ color: "#F1F3F4" }}
+                        formatter={(value) => `$${Number(value).toLocaleString()}`}
+                        labelStyle={{ color: "#9AA3AA", marginBottom: "4px" }}
+                      />
+                      <ReferenceLine x="Now" stroke="#68727A" strokeDasharray="3 3" label={{ position: "insideTopLeft", value: "NOW", fill: "#68727A", fontSize: 10 }} />
+                      
+                      {/* Forecast Band */}
+                      <Area type="monotone" dataKey="p90" stroke="none" fill="url(#colorBand)" />
+                      <Area type="monotone" dataKey="p10" stroke="none" fill="#111417" />
+                      
+                      {/* Forecast P50 Line */}
+                      <Area type="monotone" dataKey="p50" stroke="#19A7CE" strokeWidth={2} strokeDasharray="5 5" fill="none" connectNulls />
+                      
+                      {/* Actual History */}
+                      <Area type="monotone" dataKey="actual" stroke="#19A7CE" strokeWidth={2} fill="url(#colorActual)" connectNulls />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
           </div>
         </div>
