@@ -1,10 +1,4 @@
-/**
- * FreightIQ — Route Planner Page
- * A→B journey planner with 30-day price calendar showing cheapest booking days.
- */
-
-import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useCallback } from "react";
 import { cn } from "../lib/utils";
 import { VesselRecommender } from "../components/VesselRecommender";
 import { RouteMap } from "../components/RouteMap";
@@ -22,14 +16,6 @@ interface CalendarDay {
   percentile: number;  // 0–100: lower = cheaper
   label: "Best" | "Good" | "Fair" | "High" | "Peak";
   savings: number;     // $ saved vs peak
-}
-
-interface RouteOption {
-  from: string;
-  to: string;
-  distance: number;
-  transitDays: number;
-  cargo: string;
 }
 
 const ORIGINS = [
@@ -89,24 +75,66 @@ const CARGO_TYPES = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════════
-   Calendar Grid Component
+   Components
    ═══════════════════════════════════════════════════════════════════ */
 
-const DAY_COLORS: Record<CalendarDay["label"], string> = {
-  Best: "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30",
-  Good: "bg-cyan-500/15 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25",
-  Fair: "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20",
-  High: "bg-orange-500/10 border-orange-500/20 text-orange-300 hover:bg-orange-500/20",
-  Peak: "bg-rose-500/10 border-rose-500/20 text-rose-300 hover:bg-rose-500/20",
+const DOT_COLORS: Record<CalendarDay["label"], string> = {
+  Best: "bg-[#22A06B]",
+  Good: "bg-[#19A7CE]",
+  Fair: "bg-[#D99A24]",
+  High: "bg-[#EA580C]",
+  Peak: "bg-[#D94A4A]",
 };
 
-const DOT_COLORS: Record<CalendarDay["label"], string> = {
-  Best: "bg-emerald-400",
-  Good: "bg-cyan-400",
-  Fair: "bg-yellow-400",
-  High: "bg-orange-400",
-  Peak: "bg-rose-400",
-};
+function StyledSelect({
+  label,
+  value,
+  options,
+  onChange,
+  id,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (val: string) => void;
+  id: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-xs font-medium text-[#9AA3AA]">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={cn(
+            "w-full appearance-none rounded-md border border-[#252A2E] bg-[#171B1F]",
+            "px-3.5 py-2 pr-10 text-sm text-[#F1F3F4]",
+            "outline-none transition-colors duration-150",
+            "hover:border-[#3A4147] focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]/20"
+          )}
+        >
+          {options.map((opt) => (
+            <option key={opt} value={opt} className="bg-[#171B1F] text-[#F1F3F4]">
+              {opt}
+            </option>
+          ))}
+        </select>
+        <svg
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#68727A]"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </div>
+  );
+}
 
 function PriceCalendar({
   days,
@@ -117,7 +145,6 @@ function PriceCalendar({
   selectedDate: string | null;
   onSelect: (day: CalendarDay) => void;
 }) {
-  // Build week rows
   const firstDay = days[0]?.date;
   const startDow = firstDay ? firstDay.getDay() : 0;
   const padded: (CalendarDay | null)[] = [
@@ -130,41 +157,37 @@ function PriceCalendar({
 
   return (
     <div>
-      {/* Day headers */}
       <div className="grid grid-cols-7 mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-          <div key={d} className="text-center text-[10px] font-mono font-semibold text-neutral-600 uppercase py-2">
+          <div key={d} className="text-center text-[10px] font-medium text-[#68727A] uppercase py-2">
             {d}
           </div>
         ))}
       </div>
-      {/* Weeks */}
       <div className="space-y-1.5">
         {weeks.map((week, wi) => (
           <div key={wi} className="grid grid-cols-7 gap-1.5">
             {week.map((day, di) =>
               day ? (
-                <motion.button
+                <button
                   key={day.dateStr}
                   id={`cal-day-${day.dateStr}`}
                   onClick={() => onSelect(day)}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
                   className={cn(
-                    "relative rounded-xl border p-2 text-center cursor-pointer transition-all duration-150",
-                    DAY_COLORS[day.label],
-                    selectedDate === day.dateStr && "ring-2 ring-white/30 ring-offset-1 ring-offset-neutral-950",
-                    day.date.toDateString() === new Date().toDateString() && "ring-1 ring-cyan-500/40"
+                    "relative rounded-md border p-2 text-center cursor-pointer transition-colors duration-150",
+                    "bg-[#171B1F] border-[#252A2E] hover:border-[#3A4147] hover:bg-[#1E2328]",
+                    selectedDate === day.dateStr && "border-[#19A7CE] bg-[#19A7CE]/10",
+                    day.date.toDateString() === new Date().toDateString() && "ring-1 ring-[#19A7CE]/30"
                   )}
                 >
-                  <div className="text-[11px] font-mono font-semibold">
+                  <div className="text-xs font-medium text-[#F1F3F4]">
                     {day.date.getDate()}
                   </div>
-                  <div className="text-[9px] font-mono mt-0.5 opacity-80">
+                  <div className="text-[10px] text-[#9AA3AA] mt-0.5">
                     ${Math.round(day.rate / 1000)}k
                   </div>
-                  <div className={cn("absolute top-1 right-1 h-1.5 w-1.5 rounded-full", DOT_COLORS[day.label])} />
-                </motion.button>
+                  <div className={cn("absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full", DOT_COLORS[day.label])} />
+                </button>
               ) : (
                 <div key={`empty-${wi}-${di}`} />
               )
@@ -176,25 +199,18 @@ function PriceCalendar({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Legend
-   ═══════════════════════════════════════════════════════════════════ */
 function CalendarLegend() {
   return (
-    <div className="flex items-center gap-4 flex-wrap">
+    <div className="flex items-center gap-3 flex-wrap">
       {(["Best", "Good", "Fair", "High", "Peak"] as CalendarDay["label"][]).map((label) => (
         <div key={label} className="flex items-center gap-1.5">
-          <span className={cn("h-2.5 w-2.5 rounded-full", DOT_COLORS[label])} />
-          <span className="text-[10px] font-mono text-neutral-500">{label}</span>
+          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", DOT_COLORS[label])} />
+          <span className="text-[11px] text-[#9AA3AA]">{label}</span>
         </div>
       ))}
     </div>
   );
 }
-
-/* ═══════════════════════════════════════════════════════════════════
-   Transit Timeline
-   ═══════════════════════════════════════════════════════════════════ */
 
 function TransitTimeline({
   departure,
@@ -207,59 +223,45 @@ function TransitTimeline({
   arrival.setDate(arrival.getDate() + transitDays);
 
   const milestones = [
-    { label: "Departure", days: 0, icon: "⚓" },
-    { label: "Open Ocean", days: Math.floor(transitDays * 0.3), icon: "🌊" },
-    { label: "Mid-voyage", days: Math.floor(transitDays * 0.55), icon: "📡" },
-    { label: "Approach", days: transitDays - 1, icon: "🗼" },
-    { label: "Arrival ETA", days: transitDays, icon: "🏭" },
+    { label: "Departure", days: 0 },
+    { label: "Open Ocean", days: Math.floor(transitDays * 0.3) },
+    { label: "Mid-voyage", days: Math.floor(transitDays * 0.55) },
+    { label: "Approach", days: transitDays - 1 },
+    { label: "Arrival ETA", days: transitDays },
   ];
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-neutral-900/60 p-5 backdrop-blur-md">
-      <h3 className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-4">
-        Transit Timeline
-      </h3>
-      {/* Track */}
+    <div className="rounded-lg border border-[#252A2E] bg-[#111417] p-5">
+      <h3 className="text-xs font-medium text-[#9AA3AA] mb-4">Transit Timeline</h3>
       <div className="relative">
-        <div className="absolute left-5 top-5 bottom-5 w-px bg-gradient-to-b from-cyan-500/40 to-transparent" />
-        <div className="space-y-5">
+        <div className="absolute left-2 top-2 bottom-2 w-px bg-[#252A2E]" />
+        <div className="space-y-4">
           {milestones.map((m, i) => {
             const d = new Date(departure.date);
             d.setDate(d.getDate() + m.days);
             return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.08 }}
-                className="flex items-center gap-4 pl-1"
-              >
+              <div key={i} className="flex items-start gap-3 relative">
                 <div className={cn(
-                  "h-9 w-9 rounded-full flex items-center justify-center shrink-0 text-lg z-10",
-                  i === 0 ? "bg-cyan-500/20 border border-cyan-500/40" :
-                  i === milestones.length - 1 ? "bg-emerald-500/20 border border-emerald-500/40" :
-                  "bg-neutral-800 border border-white/[0.06]"
+                  "h-4 w-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 z-10 bg-[#111417]",
+                  i === 0 ? "border border-[#19A7CE]" :
+                  i === milestones.length - 1 ? "border border-[#22A06B]" :
+                  "border border-[#68727A]"
                 )}>
-                  {m.icon}
+                  <div className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    i === 0 ? "bg-[#19A7CE]" :
+                    i === milestones.length - 1 ? "bg-[#22A06B]" :
+                    "bg-[#68727A]"
+                  )} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-white">{m.label}</p>
-                  <p className="text-[11px] font-mono text-neutral-500">
+                  <p className="text-sm font-semibold text-[#F1F3F4]">{m.label}</p>
+                  <p className="text-xs text-[#9AA3AA]">
                     {d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
-                    {m.days > 0 && <span className="ml-2 text-neutral-600">Day +{m.days}</span>}
+                    {m.days > 0 && <span className="ml-1 text-[#68727A]">Day +{m.days}</span>}
                   </p>
                 </div>
-                {m.days === 0 && (
-                  <span className="text-[10px] font-mono font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-2.5 py-0.5">
-                    DEPART
-                  </span>
-                )}
-                {m.days === transitDays && (
-                  <span className="text-[10px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-0.5">
-                    ETA
-                  </span>
-                )}
-              </motion.div>
+              </div>
             );
           })}
         </div>
@@ -267,10 +269,6 @@ function TransitTimeline({
     </div>
   );
 }
-
-/* ═══════════════════════════════════════════════════════════════════
-   Main Page
-   ═══════════════════════════════════════════════════════════════════ */
 
 export function RoutePlannerPage() {
   const [origin, setOrigin] = useState(ORIGINS[0]);
@@ -313,305 +311,244 @@ export function RoutePlannerPage() {
     }
   }, [origin, destination, vessel, cargo]);
 
-  const bestDays = calendarDays.filter(d => d.label === "Best" || d.label === "Good").slice(0, 3);
-
   return (
-    <div className="min-h-screen bg-neutral-950 relative">
-      {/* Grid bg */}
-      <div className="absolute inset-0 grid-bg grid-bg-mask pointer-events-none" />
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-8">
-        {/* Page Header */}
-        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-8 w-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-              <svg className="h-4 w-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Route Planner</h1>
+    <div className="min-h-screen bg-[#0B0D0F] text-[#9AA3AA]">
+      {/* ── Page Header ── */}
+      <header className="border-b border-[#252A2E] bg-[#111417]">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F1F3F4]">
+            Route Planner
+          </h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-[#9AA3AA]">
+            Plan routes and identify optimal booking windows based on predictive spot rates.
+          </p>
+        </div>
+      </header>
+
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 py-5 sm:py-6">
+        
+        {/* ── TOP WORKSPACE: Journey & Vessel Fit ── */}
+        <section className="rounded-lg border border-[#252A2E] bg-[#111417] mb-5">
+          <div className="border-b border-[#252A2E] px-5 py-4">
+            <h2 className="text-base font-semibold text-[#F1F3F4]">Planning Workspace</h2>
           </div>
-          <p className="text-sm text-neutral-500 ml-11">Select origin, destination and vessel class to see the cheapest booking days on a 35-day price calendar.</p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-          {/* ── Left Panel: Search Form ── */}
-          <div className="xl:col-span-1 space-y-4">
-            <div className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-6">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-5">Journey Details</p>
-
-              {/* Origin */}
-              <div className="space-y-1.5 mb-4">
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
-                  Origin Port
-                </label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400/60">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  </div>
-                  <select
+          
+          <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            
+            {/* Left: Journey Form */}
+            <div className="flex flex-col h-full justify-between">
+              <div>
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-[#F1F3F4]">Journey Details</h3>
+                  <p className="text-xs text-[#9AA3AA] mt-0.5">Select origin and destination</p>
+                </div>
+                
+                <div className="space-y-4">
+                  <StyledSelect
                     id="select-origin"
+                    label="Origin Port"
                     value={origin}
-                    onChange={e => setOrigin(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-white/[0.06] bg-neutral-800/60 pl-9 pr-4 py-2.5 text-sm text-neutral-200 outline-none focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/20 transition-all"
-                  >
-                    {ORIGINS.map(o => <option key={o} value={o} className="bg-neutral-900">{o}</option>)}
-                  </select>
+                    options={ORIGINS}
+                    onChange={setOrigin}
+                  />
+
+                  <div className="flex justify-center -my-1 relative z-10">
+                    <button
+                      id="btn-swap-route"
+                      onClick={() => { 
+                        const t = origin; 
+                        const cleanDest = destination.replace(/\(.*\)/, "").trim();
+                        const destCode = destination.match(/\(([^)]+)\)/)?.[1] ?? "??";
+                        setOrigin(`${cleanDest} (${destCode})`); 
+                        setDestination(t); 
+                      }}
+                      className="h-7 w-7 rounded border border-[#252A2E] bg-[#171B1F] flex items-center justify-center text-[#68727A] hover:text-[#F1F3F4] hover:border-[#3A4147] transition-colors"
+                    >
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <StyledSelect
+                    id="select-destination"
+                    label="Destination Port"
+                    value={destination}
+                    options={DESTINATIONS}
+                    onChange={setDestination}
+                  />
+
+                  <div className="grid grid-cols-2 gap-3 pt-3">
+                    <StyledSelect
+                      id="select-vessel-planner"
+                      label="Vessel Class"
+                      value={vessel}
+                      options={VESSEL_CLASSES}
+                      onChange={setVessel}
+                    />
+                    <StyledSelect
+                      id="select-cargo"
+                      label="Cargo Type"
+                      value={cargo}
+                      options={CARGO_TYPES}
+                      onChange={setCargo}
+                    />
+                  </div>
                 </div>
               </div>
-
-              {/* Swap button */}
-              <div className="flex justify-center my-2">
+              
+              <div className="mt-6">
                 <button
-                  id="btn-swap-route"
-                  onClick={() => { const t = origin; setOrigin(destination.replace(/\(.*\)/, "").trim() + " " + "(" + (destination.match(/\(([^)]+)\)/)?.[1] ?? "??") + ")"); setDestination(t); }}
-                  className="h-8 w-8 rounded-full border border-white/[0.08] bg-neutral-800/60 flex items-center justify-center text-neutral-500 hover:text-cyan-400 hover:border-cyan-500/30 transition-all"
+                  id="btn-find-routes"
+                  onClick={runSearch}
+                  disabled={loading}
+                  className={cn(
+                    "w-full rounded-md py-2.5 text-sm font-semibold transition-colors",
+                    "bg-[#19A7CE] hover:bg-[#158C9B] text-[#111417]",
+                    loading && "opacity-60 cursor-not-allowed"
+                  )}
                 >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                  </svg>
+                  {loading ? "Analysing market…" : "Find Best Booking Days"}
                 </button>
               </div>
-
-              {/* Destination */}
-              <div className="space-y-1.5 mb-4">
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
-                  Destination Port
-                </label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400/60">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  </div>
-                  <select
-                    id="select-destination"
-                    value={destination}
-                    onChange={e => setDestination(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-white/[0.06] bg-neutral-800/60 pl-9 pr-4 py-2.5 text-sm text-neutral-200 outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 transition-all"
-                  >
-                    {DESTINATIONS.map(d => <option key={d} value={d} className="bg-neutral-900">{d}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {/* Vessel & Cargo */}
-              <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">Vessel</label>
-                  <select id="select-vessel-planner" value={vessel} onChange={e => setVessel(e.target.value)} className="w-full appearance-none rounded-xl border border-white/[0.06] bg-neutral-800/60 px-3 py-2.5 text-xs text-neutral-200 outline-none focus:border-cyan-500/40 transition-all">
-                    {VESSEL_CLASSES.map(v => <option key={v} value={v} className="bg-neutral-900">{v}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">Cargo</label>
-                  <select id="select-cargo" value={cargo} onChange={e => setCargo(e.target.value)} className="w-full appearance-none rounded-xl border border-white/[0.06] bg-neutral-800/60 px-3 py-2.5 text-xs text-neutral-200 outline-none focus:border-cyan-500/40 transition-all">
-                    {CARGO_TYPES.map(c => <option key={c} value={c} className="bg-neutral-900">{c}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {/* Search Button */}
-              <motion.button
-                id="btn-find-routes"
-                onClick={runSearch}
-                disabled={loading}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className={cn(
-                  "w-full rounded-xl py-3 text-sm font-semibold tracking-wide transition-all duration-200",
-                  "bg-gradient-to-r from-cyan-500/80 to-cyan-600/80 hover:from-cyan-500 hover:to-cyan-600",
-                  "text-white border border-cyan-500/30",
-                  "shadow-[0_0_20px_rgba(34,211,238,0.15)]",
-                  loading && "opacity-60 cursor-not-allowed"
-                )}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                    Analysing market…
-                  </span>
-                ) : "Find Best Booking Days →"}
-              </motion.button>
             </div>
 
-            {/* Route Summary */}
-            {routeInfo && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-5"
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-4">Route Summary</p>
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  {[
-                    { label: "Distance", value: `${routeInfo.distance.toLocaleString()} nm`, icon: "📐" },
-                    { label: "Transit", value: `~${routeInfo.transitDays}d`, icon: "⏱️" },
-                    { label: "Base Rate", value: `$${Math.round(routeInfo.baseRate / 1000)}k/d`, icon: "💲" },
-                  ].map(s => (
-                    <div key={s.label} className="rounded-xl bg-neutral-800/40 border border-white/[0.04] p-3">
-                      <div className="text-lg mb-1">{s.icon}</div>
-                      <div className="text-sm font-bold font-mono text-white">{s.value}</div>
-                      <div className="text-[9px] text-neutral-600 uppercase tracking-wider mt-0.5">{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+            {/* Right: Vessel Recommendation */}
+            <div className="relative">
+              <div className="hidden lg:block absolute -left-6 xl:-left-8 top-0 bottom-0 w-px bg-[#252A2E]" />
+              <VesselRecommender />
+            </div>
 
-            {/* Best Days Summary */}
-            {bestDays.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.03] backdrop-blur-md p-5"
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-500/70 mb-3">⚡ Top 3 Booking Windows</p>
-                <div className="space-y-2">
-                  {bestDays.map((d, i) => (
-                    <button
-                      key={d.dateStr}
-                      id={`btn-best-day-${i}`}
-                      onClick={() => setSelectedDay(d)}
-                      className="w-full flex items-center justify-between rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] hover:bg-emerald-500/10 px-3 py-2.5 transition-all"
-                    >
-                      <div className="text-left">
-                        <p className="text-xs font-semibold text-white">
-                          {d.date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
-                        </p>
-                        <p className="text-[10px] font-mono text-emerald-400">${d.rate.toLocaleString()}/day</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-0.5">
-                          Save ${d.savings.toLocaleString()}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            <VesselRecommender />
           </div>
+        </section>
 
-          {/* ── Right Panel: Calendar + Timeline ── */}
-          <div className="xl:col-span-2 space-y-5">
-            {/* Route Map */}
-            {showCalendar && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-6"
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-2">Live Trade Lane</p>
-                <RouteMap origin={origin} destination={destination} />
-              </motion.div>
-            )}
+        {/* ── Empty State before search ── */}
+        {!showCalendar && !loading && !routeInfo && (
+          <div className="py-8 text-center text-[#9AA3AA] text-sm">
+            Configure your route and find the best booking days.
+          </div>
+        )}
 
+        {/* ── Route Summary (Only appears after search) ── */}
+        {routeInfo && (
+          <div className="rounded-lg border border-[#252A2E] bg-[#111417] p-5 mb-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <h3 className="text-sm font-semibold text-[#F1F3F4]">Route Summary</h3>
+            <div className="flex items-center gap-8 text-center">
+              <div>
+                <div className="text-[#68727A] text-xs mb-1">Distance</div>
+                <div className="text-[#F1F3F4] font-semibold text-sm">{routeInfo.distance.toLocaleString()} nm</div>
+              </div>
+              <div className="w-px h-8 bg-[#252A2E]" />
+              <div>
+                <div className="text-[#68727A] text-xs mb-1">Transit</div>
+                <div className="text-[#F1F3F4] font-semibold text-sm">~{routeInfo.transitDays}d</div>
+              </div>
+              <div className="w-px h-8 bg-[#252A2E]" />
+              <div>
+                <div className="text-[#68727A] text-xs mb-1">Base Rate</div>
+                <div className="text-[#F1F3F4] font-semibold text-sm">${Math.round(routeInfo.baseRate / 1000)}k/d</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Results Area (Map, Calendar, Timeline) ── */}
+        {(showCalendar || loading) && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* Calendar */}
-            <AnimatePresence>
-              {(showCalendar || loading) && (
-                <motion.div
-                  key="calendar"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-6"
-                >
-                  <div className="flex items-center justify-between mb-5">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500">35-Day Price Calendar</p>
-                      <p className="text-xs text-neutral-600 mt-0.5">Click a date to select departure</p>
-                    </div>
-                    <CalendarLegend />
-                  </div>
+            <section className="lg:col-span-8 rounded-lg border border-[#252A2E] bg-[#111417] p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div>
+                  <h2 className="text-base font-semibold text-[#F1F3F4]">35-Day Price Calendar</h2>
+                  <p className="text-xs text-[#9AA3AA] mt-0.5">Select a date to view departure details</p>
+                </div>
+                <CalendarLegend />
+              </div>
 
-                  {loading ? (
-                    <div className="h-64 rounded-2xl bg-neutral-800/40 skeleton-shimmer" />
-                  ) : (
-                    <PriceCalendar
-                      days={calendarDays}
-                      selectedDate={selectedDay?.dateStr ?? null}
-                      onSelect={setSelectedDay}
-                    />
-                  )}
-                </motion.div>
+              {loading ? (
+                <div className="h-64 rounded-md bg-[#171B1F] animate-pulse" />
+              ) : (
+                <PriceCalendar
+                  days={calendarDays}
+                  selectedDate={selectedDay?.dateStr ?? null}
+                  onSelect={setSelectedDay}
+                />
               )}
-            </AnimatePresence>
+            </section>
 
-            {/* Selected Day Detail */}
-            <AnimatePresence>
-              {selectedDay && (
-                <motion.div
-                  key="day-detail"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 gap-5"
-                >
-                  {/* Pricing Detail */}
-                  <div className="rounded-3xl border border-white/[0.06] bg-neutral-900/80 backdrop-blur-md p-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-4">Selected Departure</p>
-                    <div className="mb-4">
-                      <p className="text-2xl font-extrabold font-mono text-white">
+            {/* Map & Timeline */}
+            <section className="lg:col-span-4 space-y-5">
+              {showCalendar && (
+                <div className="rounded-lg border border-[#252A2E] bg-[#111417] p-5">
+                  <h3 className="text-xs font-medium text-[#9AA3AA] mb-3">Live Trade Lane</h3>
+                  <div className="h-[200px]">
+                    <RouteMap origin={origin} destination={destination} />
+                  </div>
+                </div>
+              )}
+
+              {selectedDay ? (
+                <div className="space-y-5">
+                  <div className="rounded-lg border border-[#252A2E] bg-[#111417] p-5">
+                    <h3 className="text-xs font-medium text-[#9AA3AA] mb-4">Selected Departure</h3>
+                    <div className="mb-5">
+                      <p className="text-lg font-bold text-[#F1F3F4]">
                         {selectedDay.date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
                       </p>
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold mt-2",
-                        selectedDay.label === "Best" ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/25" :
-                        selectedDay.label === "Good" ? "bg-cyan-500/15 text-cyan-300 border border-cyan-500/25" :
-                        selectedDay.label === "Peak" ? "bg-rose-500/15 text-rose-300 border border-rose-500/25" :
-                        "bg-yellow-500/15 text-yellow-300 border border-yellow-500/25"
-                      )}>
-                        <span className={cn("h-2 w-2 rounded-full", DOT_COLORS[selectedDay.label])} />
-                        {selectedDay.label} Rate Window
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-xl bg-neutral-800/40 border border-white/[0.04] p-3">
-                        <p className="text-[10px] text-neutral-500 uppercase tracking-wider">Daily TCE Rate</p>
-                        <p className="text-xl font-bold font-mono text-white mt-1">${selectedDay.rate.toLocaleString()}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", DOT_COLORS[selectedDay.label])} />
+                        <span className="text-sm font-medium text-[#F1F3F4]">
+                          {selectedDay.label} Rate Window
+                        </span>
                       </div>
-                      <div className="rounded-xl bg-neutral-800/40 border border-white/[0.04] p-3">
-                        <p className="text-[10px] text-neutral-500 uppercase tracking-wider">Savings vs Peak</p>
-                        <p className={cn("text-xl font-bold font-mono mt-1", selectedDay.savings > 0 ? "text-emerald-400" : "text-rose-400")}>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                      <div className="rounded-md border border-[#252A2E] bg-[#171B1F] p-3">
+                        <span className="text-[#68727A] block text-xs">Daily TCE Rate</span>
+                        <span className="font-semibold text-[#F1F3F4] mt-0.5 block">
+                          ${selectedDay.rate.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="rounded-md border border-[#252A2E] bg-[#171B1F] p-3">
+                        <span className="text-[#68727A] block text-xs">Savings vs Peak</span>
+                        <span className={cn(
+                          "font-semibold mt-0.5 block",
+                          selectedDay.savings > 0 ? "text-[#22A06B]" : "text-[#D94A4A]"
+                        )}>
                           {selectedDay.savings > 0 ? "+" : ""}${selectedDay.savings.toLocaleString()}
-                        </p>
+                        </span>
                       </div>
                     </div>
+
                     {routeInfo && (
-                      <div className="mt-3 rounded-xl bg-cyan-500/[0.04] border border-cyan-500/10 p-3">
-                        <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">Total Voyage Cost Est.</p>
-                        <p className="text-lg font-bold font-mono text-cyan-300">
+                      <div className="rounded-md bg-[#19A7CE]/10 border border-[#19A7CE]/20 p-3">
+                        <p className="text-[#19A7CE] block text-xs mb-1">Total Voyage Cost Est.</p>
+                        <p className="text-base font-semibold text-[#F1F3F4]">
                           ${(selectedDay.rate * routeInfo.transitDays).toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-neutral-600">{routeInfo.transitDays} days × ${selectedDay.rate.toLocaleString()}/day</p>
+                        <p className="text-xs text-[#9AA3AA] mt-0.5">
+                          {routeInfo.transitDays} days × ${selectedDay.rate.toLocaleString()}/day
+                        </p>
                       </div>
                     )}
                   </div>
 
-                  {/* Timeline */}
                   {routeInfo && (
                     <TransitTimeline departure={selectedDay} transitDays={routeInfo.transitDays} />
                   )}
-                </motion.div>
+                </div>
+              ) : (
+                showCalendar && (
+                  <div className="rounded-lg border border-[#252A2E] bg-[#111417] p-8 text-center text-[#9AA3AA] text-sm h-[320px] flex items-center justify-center">
+                    Select a date on the calendar to view departure details and timeline.
+                  </div>
+                )
               )}
-            </AnimatePresence>
-
-            {/* Empty state */}
-            {!showCalendar && !loading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="rounded-3xl border border-dashed border-white/[0.06] bg-neutral-900/40 p-16 flex flex-col items-center justify-center text-center"
-              >
-                <div className="text-5xl mb-4">🧭</div>
-                <p className="text-lg font-semibold text-neutral-400">Select a route and find best days</p>
-                <p className="text-sm text-neutral-600 mt-2">Choose origin, destination, vessel class and cargo type, then click "Find Best Booking Days"</p>
-              </motion.div>
-            )}
+            </section>
           </div>
-        </div>
-      </div>
+        )}
+      </main>
     </div>
   );
 }
