@@ -52,6 +52,83 @@ ROUTE_BASE_RATES: dict[str, dict] = {
         "cargo": "Chemicals",
         "distance_nm": 10200,
     },
+    # ── Inbound routes: Origin → India East Coast (SIH PS-26006) ─────
+    # Australia
+    "Newcastle → Paradip": {
+        "base": 11500,
+        "volatility": 0.19,
+        "trend_bias": 0.003,
+        "cargo": "Coal",
+        "distance_nm": 6200,
+    },
+    "Newcastle → Gangavaram": {
+        "base": 11200,
+        "volatility": 0.18,
+        "trend_bias": 0.002,
+        "cargo": "Coal",
+        "distance_nm": 6050,
+    },
+    "Hay Point → Dhamra": {
+        "base": 12000,
+        "volatility": 0.20,
+        "trend_bias": 0.004,
+        "cargo": "Coal",
+        "distance_nm": 6400,
+    },
+    "Port Hedland → Dhamra": {
+        "base": 10800,
+        "volatility": 0.17,
+        "trend_bias": 0.003,
+        "cargo": "Iron Ore",
+        "distance_nm": 4200,
+    },
+    # Mozambique
+    "Nacala → Vizag": {
+        "base": 14200,
+        "volatility": 0.22,
+        "trend_bias": 0.005,
+        "cargo": "Coal",
+        "distance_nm": 4800,
+    },
+    # South Africa (Richards Bay — major coal export terminal)
+    "Richards Bay → Vizag": {
+        "base": 13800,
+        "volatility": 0.21,
+        "trend_bias": 0.004,
+        "cargo": "Coal",
+        "distance_nm": 4600,
+    },
+    # Indonesia
+    "Banjarmasin → Haldia": {
+        "base": 8200,
+        "volatility": 0.15,
+        "trend_bias": 0.001,
+        "cargo": "Coal",
+        "distance_nm": 3100,
+    },
+    "Samarinda → Paradip": {
+        "base": 8800,
+        "volatility": 0.16,
+        "trend_bias": 0.002,
+        "cargo": "Coal",
+        "distance_nm": 3400,
+    },
+    # USA
+    "Hampton Roads → Paradip": {
+        "base": 18500,
+        "volatility": 0.24,
+        "trend_bias": -0.001,
+        "cargo": "Coal",
+        "distance_nm": 9800,
+    },
+    # Russia
+    "Vostochny → Gangavaram": {
+        "base": 15500,
+        "volatility": 0.23,
+        "trend_bias": 0.003,
+        "cargo": "Coal",
+        "distance_nm": 5900,
+    },
 }
 
 # DWT multiplier: smaller vessels → higher $/day due to slot premium

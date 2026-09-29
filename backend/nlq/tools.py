@@ -51,6 +51,15 @@ def _match_port(port_name: str) -> Optional[dict]:
         "nmpt": "New Mangalore",
         "deen dayal": "Kandla",
         "deendayal": "Kandla",
+        "gangavaram": "Gangavaram",
+        "ggv": "Gangavaram",
+        "gopalpur": "Gopalpur",
+        "dhamra": "Dhamra",
+        "adani dhamra": "Dhamra",
+        "sagar": "Sagar-Sandheads",
+        "sandheads": "Sagar-Sandheads",
+        "sagar sandheads": "Sagar-Sandheads",
+        "sagar-sandheads": "Sagar-Sandheads",
     }
     resolved = aliases.get(port_lower)
     if resolved:
