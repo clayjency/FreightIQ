@@ -30,18 +30,18 @@ _retriever: Optional[VectorStoreRetriever] = None
 def _build_faiss_store():
     """
     Build a FAISS vector store from mock domain documents.
-    Uses OpenAI embeddings (text-embedding-3-small by default).
+    Uses Gemini embeddings (models/text-embedding-004 by default).
     """
-    from langchain_openai import OpenAIEmbeddings
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings
     from langchain_community.vectorstores import FAISS
     from backend.nlq.mock_documents import get_mock_documents
 
     logger.info("Building FAISS vector store from %d domain documents...", 
                 len(get_mock_documents()))
 
-    embeddings = OpenAIEmbeddings(
-        model=settings.OPENAI_EMBEDDING_MODEL,
-        openai_api_key=settings.OPENAI_API_KEY,
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model=settings.GEMINI_EMBEDDING_MODEL,
+        google_api_key=settings.GEMINI_API_KEY,
     )
 
     documents = get_mock_documents()
@@ -60,7 +60,7 @@ def _build_pinecone_store():
     FAISS is the recommended default.
     """
     try:
-        from langchain_openai import OpenAIEmbeddings
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
         from langchain_pinecone import PineconeVectorStore
         from pinecone import Pinecone
         from backend.nlq.mock_documents import get_mock_documents
@@ -72,9 +72,9 @@ def _build_pinecone_store():
         pc = Pinecone(api_key=settings.PINECONE_API_KEY)
         index = pc.Index(settings.PINECONE_INDEX_NAME)
 
-        embeddings = OpenAIEmbeddings(
-            model=settings.OPENAI_EMBEDDING_MODEL,
-            openai_api_key=settings.OPENAI_API_KEY,
+        embeddings = GoogleGenerativeAIEmbeddings(
+            model=settings.GEMINI_EMBEDDING_MODEL,
+            google_api_key=settings.GEMINI_API_KEY,
         )
 
         # Check if index is empty — if so, seed with mock documents
@@ -120,10 +120,10 @@ def get_vector_store():
     if _vector_store is not None:
         return _vector_store
 
-    if not settings.is_openai_configured:
+    if not settings.is_gemini_configured:
         raise RuntimeError(
-            "OpenAI API key is not configured. "
-            "Set OPENAI_API_KEY in your .env file to enable the NLQ module."
+            "Gemini API key is not configured. "
+            "Set GEMINI_API_KEY in your .env file to enable the NLQ module."
         )
 
     backend = settings.effective_vector_backend

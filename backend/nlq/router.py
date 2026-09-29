@@ -116,7 +116,7 @@ class ChatQueryResponse(BaseModel):
 class NLQHealthResponse(BaseModel):
     """Health check response for the NLQ subsystem."""
     status: str
-    openai_configured: bool
+    gemini_configured: bool
     vector_store_backend: str
     model: str
     agent_ready: bool
@@ -143,7 +143,7 @@ router = APIRouter(prefix="/api/v1/chat", tags=["NLQ — Natural Language Query"
     responses={
         200: {"description": "Successful query response with answer and metadata."},
         422: {"description": "Validation error — query too short or malformed."},
-        503: {"description": "NLQ service unavailable — OpenAI API key not configured."},
+        503: {"description": "NLQ service unavailable — Gemini API key not configured."},
         500: {"description": "Internal agent execution error."},
     },
 )
@@ -158,15 +158,15 @@ async def chat_query(request: ChatQueryRequest) -> ChatQueryResponse:
     4. Generate a comprehensive, CVC-compliant response
     """
 
-    # ── Guard: Check if OpenAI is configured ────────────────────────────
-    if not settings.is_openai_configured:
+    # ── Guard: Check if Gemini is configured ────────────────────────────
+    if not settings.is_gemini_configured:
         raise HTTPException(
             status_code=503,
             detail={
                 "error": "NLQ service unavailable",
                 "message": (
-                    "OpenAI API key is not configured. "
-                    "Set OPENAI_API_KEY in your backend/.env file and restart the server."
+                    "Gemini API key is not configured. "
+                    "Set GEMINI_API_KEY in your backend/.env file and restart the server."
                 ),
                 "docs": "See backend/.env.example for the required configuration.",
             },
@@ -218,7 +218,7 @@ async def chat_query(request: ChatQueryRequest) -> ChatQueryResponse:
             detail={
                 "error": "Agent execution failed",
                 "message": str(e),
-                "suggestion": "Check server logs for details. Ensure OPENAI_API_KEY is valid.",
+                "suggestion": "Check server logs for details. Ensure GEMINI_API_KEY is valid.",
             },
         )
     except Exception as e:
@@ -236,7 +236,7 @@ async def chat_query(request: ChatQueryRequest) -> ChatQueryResponse:
     "/health",
     response_model=NLQHealthResponse,
     summary="NLQ subsystem health check",
-    description="Returns the status of the NLQ module, including OpenAI configuration and agent readiness.",
+    description="Returns the status of the NLQ module, including Gemini configuration and agent readiness.",
 )
 async def nlq_health() -> NLQHealthResponse:
     """Health check for the NLQ subsystem."""
@@ -248,9 +248,9 @@ async def nlq_health() -> NLQHealthResponse:
         pass
 
     return NLQHealthResponse(
-        status="ready" if settings.is_openai_configured else "awaiting_api_key",
-        openai_configured=settings.is_openai_configured,
+        status="ready" if settings.is_gemini_configured else "awaiting_api_key",
+        gemini_configured=settings.is_gemini_configured,
         vector_store_backend=settings.effective_vector_backend.value,
-        model=settings.OPENAI_MODEL,
+        model=settings.GEMINI_MODEL,
         agent_ready=agent_ready,
     )

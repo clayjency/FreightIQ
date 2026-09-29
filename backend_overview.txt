@@ -1,0 +1,42 @@
+FreightIQ Backend Overview
+
+1. Backend Architecture
+-----------------------
+The backend is built using FastAPI (Python) and serves as a production-ready API for the FreightIQ maritime intelligence dashboard.
+
+Project Structure:
+- `backend/main.py`: The entry point of the FastAPI application. It initializes the app, configures CORS, registers all the API routers (endpoints), and calls the database initialization function.
+- `backend/routers/`: Contains individual modules for different API endpoints like dashboard, forecast, ports, decision, routes, planner, and auth.
+- `backend/database.py`: Handles the SQLite database connection, table creation, and queries.
+- `backend/models/`: Contains Pydantic schemas for data validation (`schemas.py`) and the ML engine logic for rate forecasting and decision making (`ml_engine.py`).
+- `backend/data/`: Manages mocked/simulated data generation (e.g., GBM rate simulator, port registries).
+
+2. How it works
+---------------
+When you run the backend (e.g., `python -m uvicorn backend.main:app`), it starts the FastAPI server.
+- The React frontend fetches data from endpoints like `/api/dashboard`, `/api/forecast`, etc.
+- These endpoints query the ML engine, which currently simulates data like freight rates, port congestion, and booking decisions using statistical models (GBM) and rules. It's designed so you can swap in a real PyTorch LSTM model in `models/ml_engine.py`.
+
+3. Where is the Users table created?
+------------------------------------
+The `users` table is created in `backend/database.py` within the `init_db()` function.
+
+Path: `backend/database.py`
+Code:
+```python
+def init_db():
+    """Initialize database tables."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            hashed_password TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+```
+This function is called automatically when the server starts via `backend/main.py`. It creates an SQLite database file named `freightiq_data.db` in the root folder if it doesn't already exist.

@@ -5,7 +5,7 @@ Uses pydantic-settings for validation with .env file support.
 
 Usage:
     from backend.nlq.config import settings
-    print(settings.OPENAI_API_KEY)
+    print(settings.GEMINI_API_KEY)
 """
 
 from __future__ import annotations
@@ -32,21 +32,21 @@ class NLQSettings(BaseSettings):
     located in the backend/ directory.
     """
 
-    # ── OpenAI ──────────────────────────────────────────────────────────────
-    OPENAI_API_KEY: str = Field(
+    # ── Gemini ──────────────────────────────────────────────────────────────
+    GEMINI_API_KEY: str = Field(
         default="",
-        description="OpenAI API key for GPT-4o and embeddings. "
+        description="Gemini API key for models and embeddings. "
                     "Leave empty to start server without NLQ capability.",
     )
-    OPENAI_MODEL: str = Field(
-        default="gpt-4o",
-        description="OpenAI chat model name.",
+    GEMINI_MODEL: str = Field(
+        default="gemini-3.8-flash",
+        description="Gemini chat model name.",
     )
-    OPENAI_EMBEDDING_MODEL: str = Field(
-        default="text-embedding-3-small",
-        description="OpenAI embedding model for vector store.",
+    GEMINI_EMBEDDING_MODEL: str = Field(
+        default="models/gemini-embedding-2",
+        description="Gemini embedding model for vector store.",
     )
-    OPENAI_TEMPERATURE: float = Field(
+    GEMINI_TEMPERATURE: float = Field(
         default=0.1,
         ge=0.0,
         le=2.0,
@@ -107,10 +107,10 @@ class NLQSettings(BaseSettings):
     # ── Derived helpers ─────────────────────────────────────────────────────
 
     @property
-    def is_openai_configured(self) -> bool:
-        """True if a non-empty OpenAI API key is present."""
-        return bool(self.OPENAI_API_KEY and self.OPENAI_API_KEY.strip()
-                     and self.OPENAI_API_KEY != "your-key-here")
+    def is_gemini_configured(self) -> bool:
+        """True if a non-empty Gemini API key is present."""
+        return bool(self.GEMINI_API_KEY and self.GEMINI_API_KEY.strip()
+                     and self.GEMINI_API_KEY != "your-key-here")
 
     @property
     def is_pinecone_configured(self) -> bool:

@@ -24,7 +24,7 @@ interface Message {
 
 interface HealthStatus {
   status: "ok" | "awaiting_api_key" | "error";
-  openai_configured: boolean;
+  gemini_configured: boolean;
   vector_store_backend: string;
   model: string;
   agent_ready: boolean;
@@ -42,7 +42,7 @@ export function NLQAssistantPage() {
     {
       id: "welcome-1",
       sender: "assistant",
-      text: "Welcome to the FreightIQ Natural Language Chartering Interface. I am your GPT-4o-powered assistant trained on historical freight rates, port authority circulars (Paradip, Vizag, Haldia, Dhamra), vessel specifications, and CVC chartering guidelines. How can I assist your chartering operations today?",
+      text: "Welcome to the FreightIQ Natural Language Chartering Interface. I am your Gemini-powered assistant trained on historical freight rates, port authority circulars (Paradip, Vizag, Haldia, Dhamra), vessel specifications, and CVC chartering guidelines. How can I assist your chartering operations today?",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -59,9 +59,9 @@ export function NLQAssistantPage() {
       .catch(() =>
         setHealth({
           status: "error",
-          openai_configured: false,
+          gemini_configured: false,
           vector_store_backend: "faiss",
-          model: "gpt-4o",
+          model: "gemini-1.5-flash",
           agent_ready: false,
         })
       );
@@ -139,235 +139,207 @@ export function NLQAssistantPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#0B0D0F] text-[#9AA3AA] overflow-hidden">
+    <div className="flex flex-col h-screen bg-neutral-950 text-neutral-100 overflow-hidden">
       {/* ── Top Header ── */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-[#252A2E] bg-[#111417] shrink-0">
+      <header className="flex items-center justify-between px-8 py-5 border-b border-white/[0.06] bg-neutral-950/80 backdrop-blur-md shrink-0">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F1F3F4]">Freight Intelligence Assistant</h1>
-          <p className="mt-0.5 text-xs sm:text-sm text-[#9AA3AA]">
-            Natural-language access to freight rates, port conditions, vessel constraints & chartering intelligence.
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold tracking-tight text-white">Natural Language Query Assistant</h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              Gemini + Hybrid RAG
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 mt-1">
+            Intelligent freight forecasting & vessel chartering query interface for East Coast India ports
           </p>
         </div>
 
         {/* Status Badge */}
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-sm bg-[#171B1F] border border-[#252A2E] text-[#9AA3AA]">
-            <span className="text-[#68727A]">Engine:</span>
-            <span className="text-[#F1F3F4] font-medium">GPT-4o + Hybrid RAG</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-sm bg-[#171B1F] border border-[#252A2E] text-[#9AA3AA]">
-            <span className="text-[#68727A]">Vector Store:</span>
-            <span className="text-[#F1F3F4] font-medium uppercase">{health?.vector_store_backend || "FAISS"}</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-900 border border-white/[0.08] text-xs font-mono">
+            <span className="text-neutral-500">Vector Store:</span>
+            <span className="text-cyan-400 font-semibold uppercase">{health?.vector_store_backend || "FAISS"}</span>
           </div>
 
           <div
             className={cn(
-              "flex items-center gap-1.5 px-2 py-1 rounded-sm border text-xs font-medium transition-all",
-              health?.openai_configured
-                ? "bg-[#171B1F] text-[#22A06B] border-[#252A2E]"
-                : "bg-[#D99A24]/10 text-[#D99A24] border-[#D99A24]/30"
+              "flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all",
+              health?.gemini_configured
+                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                : "bg-amber-500/10 text-amber-400 border-amber-500/20"
             )}
           >
             <span
               className={cn(
-                "h-1.5 w-1.5 rounded-full shrink-0",
-                health?.openai_configured ? "bg-[#22A06B]" : "bg-[#D99A24] animate-pulse"
+                "h-2 w-2 rounded-full",
+                health?.gemini_configured ? "bg-emerald-400" : "bg-amber-400 animate-pulse"
               )}
             />
-            <span>{health?.openai_configured ? "OpenAI Connected" : "Awaiting API Key"}</span>
+            <span>{health?.gemini_configured ? "Gemini Engine Online" : "Awaiting GEMINI_API_KEY"}</span>
           </div>
         </div>
       </header>
 
       {/* ── API Key Banner Notice (If Key is Missing) ── */}
-      {health && !health.openai_configured && (
-        <div className="bg-[#D99A24]/10 border-b border-[#D99A24]/20 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs text-[#D99A24] shrink-0">
+      {health && !health.gemini_configured && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-8 py-3 flex items-center justify-between text-xs text-amber-300">
           <div className="flex items-center gap-2">
-            <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <span>
-              <strong className="font-semibold text-[#D99A24]">OpenAI API Key Not Detected:</strong> Backend is running in standby mode. Add your <code className="bg-[#D99A24]/20 border border-[#D99A24]/30 px-1 py-0.5 rounded text-[#D99A24] font-mono mx-0.5">OPENAI_API_KEY</code> in <code className="bg-[#D99A24]/20 border border-[#D99A24]/30 px-1 py-0.5 rounded text-[#D99A24] font-mono mx-0.5">backend/.env</code> to enable live GPT-4o synthesis.
+              <strong>Gemini API Key Not Detected:</strong> Backend is running in standby mode. Add your <code className="bg-amber-950/60 px-1.5 py-0.5 rounded text-amber-200 font-mono">GEMINI_API_KEY</code> in <code className="bg-amber-950/60 px-1.5 py-0.5 rounded text-amber-200 font-mono">backend/.env</code> to enable live Gemini synthesis.
             </span>
           </div>
-          <span className="text-[10px] font-mono opacity-80 hidden sm:block">Endpoint: POST /api/v1/chat/query</span>
+          <span className="text-[10px] font-mono text-amber-400/70">Endpoint: POST /api/v1/chat/query</span>
         </div>
       )}
 
       {/* ── Main Chat Area ── */}
-      <div className="flex-1 overflow-hidden flex justify-center p-4 sm:p-6">
-        <div className="w-full max-w-5xl bg-[#111417] border border-[#252A2E] rounded-lg shadow-sm flex flex-col h-full overflow-hidden relative">
-          
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-            {messages.map((msg) => {
-              if (msg.id === "welcome-1") {
-                return (
-                  <div key={msg.id} className="pb-1">
-                    <div className="mb-3">
-                      <h2 className="text-lg font-bold text-[#F1F3F4] mb-1.5">FreightIQ Intelligence Assistant</h2>
-                      <p className="text-sm text-[#9AA3AA] max-w-2xl leading-relaxed">
-                        I am your GPT-4o-powered assistant trained on historical freight rates, port authority circulars (Paradip, Vizag, Haldia, Dhamra), vessel specifications, and CVC chartering guidelines.
-                      </p>
-                    </div>
-
-                    <div className="mb-4">
-                      <p className="text-xs font-semibold text-[#F1F3F4] mb-1.5">Ask questions about:</p>
-                      <ul className="text-sm text-[#9AA3AA] space-y-1 list-disc list-inside marker:text-[#3A4147]">
-                        <li>Freight rate forecasts</li>
-                        <li>Port congestion & constraints</li>
-                        <li>Vessel draft compliance</li>
-                        <li>Chartering conditions</li>
-                      </ul>
-                    </div>
-
-                    {messages.length === 1 && (
-                      <div className="mt-4 pt-3 border-t border-[#252A2E]">
-                        <p className="text-xs font-semibold text-[#68727A] uppercase tracking-wider mb-2.5">Suggested Queries</p>
-                        <div className="flex flex-wrap gap-2">
-                          {SAMPLE_PROMPTS.map((prompt, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => handleSend(prompt)}
-                              disabled={loading}
-                              className="text-xs bg-[#171B1F] hover:bg-[#1E2328] text-[#9AA3AA] hover:text-[#F1F3F4] px-3.5 py-2 rounded-md border border-[#252A2E] hover:border-[#3A4147] transition-colors text-left"
-                            >
-                              {prompt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              return (
-                <div
-                  key={msg.id}
-                  className={cn(
-                    "flex flex-col gap-1.5 max-w-3xl",
-                    msg.sender === "user" ? "ml-auto items-end" : "mr-auto items-start"
-                  )}
-                >
-                  {/* Sender Name / Timestamp */}
-                  <div className="flex items-center gap-2 text-[10px] text-[#68727A] px-1">
-                    {msg.sender === "assistant" && <span className="font-semibold text-[#19A7CE]">FREIGHTIQ ASSISTANT</span>}
-                    {msg.sender === "assistant" && <span>•</span>}
-                    <span>{msg.timestamp}</span>
-                    {msg.sender === "user" && <span>•</span>}
-                    {msg.sender === "user" && <span className="font-semibold text-[#F1F3F4]">YOU</span>}
-                  </div>
-
-                  {/* Message Body */}
-                  <div
-                    className={cn(
-                      "text-sm leading-relaxed whitespace-pre-wrap shadow-sm break-words",
-                      msg.sender === "user"
-                        ? "bg-[#171B1F] text-[#F1F3F4] border border-[#252A2E] px-4 py-3 rounded-md max-w-full"
-                        : msg.error
-                        ? "bg-[#D94A4A]/10 text-[#D94A4A] border-l-2 border-[#D94A4A] px-4 py-3 max-w-full"
-                        : "text-[#F1F3F4] border-l-2 border-[#19A7CE] pl-4 py-1 max-w-full"
-                    )}
-                  >
-                    {msg.text}
-
-                    {/* Tool Execution Cards */}
-                    {msg.intermediateSteps && msg.intermediateSteps.length > 0 && (
-                      <div className="mt-4 space-y-2">
-                        <p className="text-[10px] font-mono uppercase tracking-widest text-[#68727A]">Intelligence Tools Utilized ({msg.intermediateSteps.length}):</p>
-                        {msg.intermediateSteps.map((step, idx) => (
-                          <div
-                            key={idx}
-                            className="p-3 rounded-md bg-[#171B1F] border border-[#252A2E] text-xs font-mono space-y-1.5"
-                          >
-                            <div className="flex items-center justify-between text-[#19A7CE]">
-                              <span className="font-semibold">🛠️ {step.tool}</span>
-                            </div>
-                            <p className="text-[#9AA3AA] text-[11px] truncate">Inputs: {JSON.stringify(step.args)}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Source Attribution & Confidence */}
-                    {(msg.sources?.length || msg.confidenceScore) && (
-                      <div className="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-[#252A2E] text-[10px] text-[#68727A] font-mono">
-                        {msg.sources && msg.sources.length > 0 && (
-                          <span className="truncate max-w-[400px]">
-                            📚 Sources: {msg.sources.join(" | ")}
-                          </span>
-                        )}
-                        {msg.confidenceScore !== undefined && (
-                          <span className="shrink-0 text-[#19A7CE]">
-                            🎯 Confidence: {(msg.confidenceScore * 100).toFixed(0)}%
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-
-            {loading && (
-              <div className="flex flex-col gap-1.5 max-w-3xl mr-auto items-start">
-                <div className="flex items-center gap-2 text-[10px] text-[#68727A] px-1">
-                  <span className="font-semibold text-[#19A7CE]">FREIGHTIQ ASSISTANT</span>
-                </div>
-                <div className="border-l-2 border-[#19A7CE] pl-4 py-2 text-sm text-[#9AA3AA] flex items-center gap-3">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#19A7CE] animate-ping" />
-                  Compiling intelligence report...
-                </div>
-              </div>
+      <div className="flex-1 overflow-y-auto p-8 space-y-6">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={cn(
+              "flex gap-4 max-w-4xl",
+              msg.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
             )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* ── Input Area ── */}
-          <div className="p-4 sm:p-6 border-t border-[#252A2E] bg-[#111417]">
-            <label className="block text-xs font-semibold text-[#F1F3F4] uppercase tracking-widest mb-3">
-              Ask FreightIQ
-            </label>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSend();
-              }}
-              className="flex gap-3"
+          >
+            {/* Avatar */}
+            <div
+              className={cn(
+                "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 border text-xs font-bold",
+                msg.sender === "user"
+                  ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+                  : msg.error
+                  ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                  : "bg-neutral-900 text-cyan-400 border-white/[0.1]"
+              )}
             >
-              <input
-                type="text"
-                value={inputQuery}
-                onChange={(e) => setInputQuery(e.target.value)}
-                placeholder="What is the freight rate forecast for Capesize from Vizag to Yokohama?"
-                disabled={loading}
-                className="flex-1 bg-[#171B1F] border border-[#252A2E] focus:border-[#19A7CE] text-[#F1F3F4] rounded-md px-4 py-3.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#19A7CE]/20 transition-all placeholder:text-[#68727A]"
-              />
-              <button
-                type="submit"
-                disabled={loading || !inputQuery.trim()}
+              {msg.sender === "user" ? "YOU" : "AI"}
+            </div>
+
+            {/* Bubble */}
+            <div className="space-y-2 max-w-2xl">
+              <div
                 className={cn(
-                  "px-6 py-3.5 rounded-md font-semibold text-sm transition-colors flex items-center gap-2 shrink-0 border",
-                  loading || !inputQuery.trim()
-                    ? "bg-[#171B1F] text-[#68727A] cursor-not-allowed border-[#252A2E]"
-                    : "bg-[#19A7CE] text-[#0B0D0F] border-[#19A7CE] hover:bg-[#1694b8] hover:border-[#1694b8] shadow-sm"
+                  "p-4 rounded-2xl border text-sm leading-relaxed whitespace-pre-line shadow-sm",
+                  msg.sender === "user"
+                    ? "bg-cyan-600/15 text-cyan-50 border-cyan-500/30 rounded-tr-none"
+                    : msg.error
+                    ? "bg-amber-950/30 text-amber-200 border-amber-500/30 rounded-tl-none"
+                    : "bg-neutral-900/90 text-neutral-200 border-white/[0.08] rounded-tl-none"
                 )}
               >
-                <span>Ask &rarr;</span>
-              </button>
-            </form>
-            <div className="mt-4 text-center flex flex-wrap items-center justify-center gap-2 text-[10px] text-[#68727A]">
-              <span>Freight rates</span>
-              <span className="hidden sm:inline">•</span>
-              <span>Port intelligence</span>
-              <span className="hidden sm:inline">•</span>
-              <span>Vessel constraints</span>
-              <span className="hidden sm:inline">•</span>
-              <span>Chartering</span>
+                {msg.text}
+              </div>
+
+              {/* Tool Execution Cards */}
+              {msg.intermediateSteps && msg.intermediateSteps.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Executed Intelligence Tools ({msg.intermediateSteps.length}):</p>
+                  {msg.intermediateSteps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-xl bg-neutral-950/80 border border-cyan-500/20 text-xs font-mono space-y-1"
+                    >
+                      <div className="flex items-center justify-between text-cyan-400">
+                        <span className="font-semibold">🛠️ {step.tool}</span>
+                        <span className="text-[10px] text-neutral-500">Structured Data Tool</span>
+                      </div>
+                      <p className="text-neutral-400 text-[11px]">Inputs: {JSON.stringify(step.args)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Source Attribution & Confidence */}
+              {(msg.sources?.length || msg.confidenceScore) && (
+                <div className="flex items-center justify-between gap-4 pt-1 text-[11px] text-neutral-500 font-mono">
+                  {msg.sources && msg.sources.length > 0 && (
+                    <span className="truncate">
+                      📚 Sources: {msg.sources.join(" | ")}
+                    </span>
+                  )}
+                  {msg.confidenceScore !== undefined && (
+                    <span className="shrink-0 text-cyan-400/90">
+                      🎯 Confidence: {(msg.confidenceScore * 100).toFixed(0)}%
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <span className="text-[10px] text-neutral-600 block">{msg.timestamp}</span>
             </div>
           </div>
+        ))}
+
+        {loading && (
+          <div className="flex gap-4 max-w-4xl mr-auto">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-neutral-900 text-cyan-400 border border-white/[0.1] text-xs font-bold animate-pulse">
+              AI
+            </div>
+            <div className="p-4 rounded-2xl bg-neutral-900/90 border border-white/[0.08] text-sm text-neutral-400 flex items-center gap-3">
+              <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
+              Executing hybrid RAG retrieval & function calling...
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* ── Suggested Prompts ── */}
+      <div className="px-8 py-3 border-t border-white/[0.04] bg-neutral-950/50 shrink-0">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Suggested Chartering Queries:</p>
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {SAMPLE_PROMPTS.map((prompt, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSend(prompt)}
+              disabled={loading}
+              className="text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white px-3 py-1.5 rounded-xl border border-white/[0.06] hover:border-cyan-500/30 transition-all shrink-0 text-left"
+            >
+              {prompt}
+            </button>
+          ))}
         </div>
+      </div>
+
+      {/* ── Query Input Box ── */}
+      <div className="p-6 border-t border-white/[0.06] bg-neutral-950 shrink-0">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+          className="flex gap-3 max-w-4xl mx-auto"
+        >
+          <input
+            type="text"
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
+            placeholder="Ask anything (e.g. 'What is the freight rate forecast for Capesize from Vizag to Yokohama?')"
+            disabled={loading}
+            className="flex-1 bg-neutral-900/90 border border-white/[0.1] focus:border-cyan-500/50 text-white rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all placeholder:text-neutral-600"
+          />
+          <button
+            type="submit"
+            disabled={loading || !inputQuery.trim()}
+            className={cn(
+              "px-6 py-3.5 rounded-2xl font-medium text-sm transition-all flex items-center gap-2 shrink-0 shadow-lg shadow-cyan-500/10",
+              loading || !inputQuery.trim()
+                ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-white/[0.05]"
+                : "bg-cyan-500 text-neutral-950 font-semibold hover:bg-cyan-400 active:scale-95"
+            )}
+          >
+            <span>Ask Gemini</span>
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+        </form>
       </div>
     </div>
   );

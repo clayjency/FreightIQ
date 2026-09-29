@@ -15,9 +15,19 @@ from typing import Any, Optional
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.tools.retriever import create_retriever_tool
-from langchain_openai import ChatOpenAI
+try:
+    from langchain.agents import AgentExecutor, create_tool_calling_agent
+except ImportError:
+    from langchain_classic.agents import AgentExecutor, create_tool_calling_agent
+
+try:
+    from langchain.tools.retriever import create_retriever_tool
+except ImportError:
+    try:
+        from langchain_core.tools import create_retriever_tool
+    except ImportError:
+        from langchain_classic.tools.retriever import create_retriever_tool
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
@@ -145,11 +155,10 @@ def _build_agent() -> AgentExecutor:
     logger.info("Building FreightIQ LangChain agent...")
 
     # ── LLM ─────────────────────────────────────────────────────────────
-    llm = ChatOpenAI(
-        model=settings.OPENAI_MODEL,
-        temperature=settings.OPENAI_TEMPERATURE,
-        openai_api_key=settings.OPENAI_API_KEY,
-        streaming=False,
+    llm = ChatGoogleGenerativeAI(
+        model=settings.GEMINI_MODEL,
+        temperature=settings.GEMINI_TEMPERATURE,
+        google_api_key=settings.GEMINI_API_KEY,
     )
 
     # ── Tools ───────────────────────────────────────────────────────────
@@ -181,7 +190,7 @@ def _build_agent() -> AgentExecutor:
     ])
 
     # ── Agent ───────────────────────────────────────────────────────────
-    agent = create_openai_tools_agent(llm, all_tools, prompt)
+    agent = create_tool_calling_agent(llm, all_tools, prompt)
 
     executor = AgentExecutor(
         agent=agent,
@@ -203,10 +212,10 @@ def get_agent() -> AgentExecutor:
     if _agent_executor is not None:
         return _agent_executor
 
-    if not settings.is_openai_configured:
+    if not settings.is_gemini_configured:
         raise RuntimeError(
-            "OpenAI API key is not configured. "
-            "Set OPENAI_API_KEY in your .env file to enable the NLQ module."
+            "Gemini API key is not configured. "
+            "Set GEMINI_API_KEY in your .env file to enable the NLQ module."
         )
 
     _agent_executor = _build_agent()
